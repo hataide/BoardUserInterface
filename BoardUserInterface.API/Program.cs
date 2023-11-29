@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using BoardUserInterface.API.BoardUserInterface.API.Services;
+using BoardUserInterface.API.SwaggerOptions;
+using BoardUserInterface.API.Logging;
 
 // Configure Serilog
 // Program.cs
@@ -65,6 +68,8 @@ builder.Services.AddSwaggerGen();
 // Add health check services to the container.
 builder.Services.AddHealthChecks();
 
+// Inside Program.cs or Startup.cs in ConfigureServices method
+builder.Services.AddScoped<FileUploadService>();
 
 
 var app = builder.Build();

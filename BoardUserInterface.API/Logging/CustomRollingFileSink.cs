@@ -3,7 +3,7 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting;
 
-namespace BoardUserInterface.API;
+namespace BoardUserInterface.API.Logging;
 
 public class CustomRollingFileSink : ILogEventSink
 {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace BoardUserInterface.API
+namespace BoardUserInterface.API.SwaggerOptions
 {
     /// <summary>
     /// Create Swagger document filter that makes all endpoints in lowercase
