@@ -1,0 +1,7 @@
+{
+  "Swagger": {
+    "Title": "Sample API",
+    "Version": "v1",
+    "Description": "A sample API for demonstration purposes"
+  }
+}
