@@ -1,4 +1,4 @@
-using BoardUserInterface.API.BoardUserInterface.API.Services;
+using BoardUserInterface.API.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardUserInterface.API.Controllers.V1
@@ -42,15 +42,15 @@ namespace BoardUserInterface.API.Controllers.V1
         [HttpPost("upload")]
         public async Task<IActionResult> Upload(IFormFile file)
         {
-            try
-            {
-                var filePath = await _fileUploadService.UploadFileAsync(file);
-                return Ok(new { filePath });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            //try
+            //{
+            var filePath = await _fileUploadService.UploadFileAsync(file);
+            return Ok(new { filePath });
+            //}
+            //catch (ArgumentException ex)
+            //{
+            //    return BadRequest(ex.Message);
+            //}
 
         }
     }

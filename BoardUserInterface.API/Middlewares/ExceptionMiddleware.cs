@@ -1,7 +1,4 @@
-﻿// ExceptionMiddleware.cs
-using Serilog.Context;
-
-public class ExceptionMiddleware
+﻿public class ExceptionMiddleware
 {
 
     private readonly RequestDelegate _next;

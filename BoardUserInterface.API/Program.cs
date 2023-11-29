@@ -1,4 +1,3 @@
-using BoardUserInterface.API;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Json;
@@ -7,9 +6,9 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using BoardUserInterface.API.BoardUserInterface.API.Services;
 using BoardUserInterface.API.SwaggerOptions;
 using BoardUserInterface.API.Logging;
+using BoardUserInterface.API.Services;
 
 // Configure Serilog
 // Program.cs
@@ -42,15 +41,6 @@ builder.Services.AddApiVersioning(options =>
 
 });
 
-
-// Register the API version description provider
-builder.Services.AddVersionedApiExplorer(options =>
-{
-    options.GroupNameFormat = "'v'VVV"; // Group format for the version
-    options.SubstituteApiVersionInUrl = true;
-});
-
-
 // Existing code for Swagger setup
 builder.Services.AddEndpointsApiExplorer();
 
@@ -73,21 +63,6 @@ builder.Services.AddScoped<FileUploadService>();
 
 
 var app = builder.Build();
-
-// Configure Swagger middleware
-app.UseSwagger();
-
-// Configure SwaggerUI middleware
-app.UseSwaggerUI(options =>
-{
-    var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
-    foreach (var description in provider.ApiVersionDescriptions)
-    {
-        options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json",
-            description.GroupName.ToUpperInvariant());
-    }
-});
-
 
 app.UseMiddleware<ExceptionMiddleware>();
 
