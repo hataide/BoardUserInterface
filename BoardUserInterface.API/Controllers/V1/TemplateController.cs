@@ -1,3 +1,4 @@
+using BoardUserInterface.API.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardUserInterface.API.Controllers.V1
@@ -8,6 +9,8 @@ namespace BoardUserInterface.API.Controllers.V1
     [ApiVersion("1.0")] // Specify the API version for this controller
     public class TemplateController : ControllerBase
     {
+        private readonly FileUploadService _fileUploadService;
+
         private static readonly string[] Summaries = new[]
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
@@ -15,9 +18,10 @@ namespace BoardUserInterface.API.Controllers.V1
 
         private readonly ILogger<TemplateController> _logger;
 
-        public TemplateController(ILogger<TemplateController> logger)
+        public TemplateController(ILogger<TemplateController> logger, FileUploadService fileUploadService)
         {
             _logger = logger;
+            _fileUploadService = fileUploadService;
         }
 
         [HttpGet()]
@@ -33,6 +37,21 @@ namespace BoardUserInterface.API.Controllers.V1
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)]
             })
             .ToArray();
+        }
+
+        [HttpPost("upload")]
+        public async Task<IActionResult> Upload(IFormFile file)
+        {
+            //try
+            //{
+            var filePath = await _fileUploadService.UploadFileAsync(file);
+            return Ok(new { filePath });
+            //}
+            //catch (ArgumentException ex)
+            //{
+            //    return BadRequest(ex.Message);
+            //}
+
         }
     }
 }

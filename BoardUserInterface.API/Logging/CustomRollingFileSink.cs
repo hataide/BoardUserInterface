@@ -1,9 +1,8 @@
-﻿// CustomRollingFileSink.cs
-using Serilog.Core;
+﻿using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting;
 
-namespace BoardUserInterface.API;
+namespace BoardUserInterface.API.Logging;
 
 public class CustomRollingFileSink : ILogEventSink
 {
@@ -19,7 +18,7 @@ public class CustomRollingFileSink : ILogEventSink
     // CustomRollingFileSink.cs
     public void Emit(LogEvent logEvent)
     {
-        if (logEvent.Level == LogEventLevel.Error) // Check if it's an error-level event
+        if (logEvent.Level == LogEventLevel.Error || logEvent.Level == LogEventLevel.Information) // Check if it's an error-level event
         {
             var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
             var uniqueId = Guid.NewGuid().ToString(); // Generate a unique identifier
