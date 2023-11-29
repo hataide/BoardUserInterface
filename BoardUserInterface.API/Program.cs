@@ -36,6 +36,7 @@ builder.Services.AddApiVersioning(options =>
     options.DefaultApiVersion = new ApiVersion(1, 0); // Default version is set to 1.0
     options.AssumeDefaultVersionWhenUnspecified = true;
     options.ReportApiVersions = true;
+
 });
 
 
