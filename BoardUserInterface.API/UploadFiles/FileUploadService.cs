@@ -26,7 +26,6 @@ public class FileUploadService : IFileUploadService
     {
         if (file == null || file.Length == 0)
         {
-            //_logger.LogError("Error during file upload. No file was uploaded or the file is empty.");
             throw new ArgumentException("File is empty or null.");
         }
 
@@ -35,7 +34,6 @@ public class FileUploadService : IFileUploadService
 
         if (fileExtension != ".xlsx" && fileExtension != ".csv")
         {
-            //_logger.LogError($"Error during file upload. Invalid file extension: {fileExtension}. Only .xlsx and .csv files are allowed.");
             throw new ArgumentException("Invalid file extension. Only .xlsx and .csv files are allowed.");
         }
 
