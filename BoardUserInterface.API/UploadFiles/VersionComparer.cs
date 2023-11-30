@@ -1,30 +1,29 @@
 ﻿namespace BoardUserInterface.API.UploadFiles;
-public class VersionComparer
+
+public interface IVersionComparer
+{
+    bool CompareVersions(string uploadedVersion, string lastVersion);
+}
+
+public class VersionComparer : IVersionComparer
 {
     public bool CompareVersions(string uploadedVersion, string lastVersion)
     {
-        var version1Parts = uploadedVersion.Split('.').Select(int.Parse).ToArray();
-        var version2Parts = lastVersion.Split('.').Select(int.Parse).ToArray();
-
-        // Compare major version parts
-        if (version1Parts[0] > version2Parts[0])
-        {
-            return true; // uploadedVersion is higher
-        }
-        else if (version1Parts[0] < version2Parts[0])
+        var _uploadedVersion = uploadedVersion.Split('.').Select(int.Parse).ToArray();
+        var _repositoryVersion = lastVersion.Split('.').Select(int.Parse).ToArray();
+        
+        if (_uploadedVersion[0] < _repositoryVersion[0])
         {
             return false; // lastVersion is higher
         }
-        else
+        
+        if (_uploadedVersion[0] == _repositoryVersion[0] && _uploadedVersion[1] <= _repositoryVersion[1])
         {
-            if (version1Parts[1] > version2Parts[1])
-            {
-                return true; // uploadedVersion is higher
-            }
-            else
-            {
-                return false; // uploadedVersion is equal or lower than lastVersion
-            }
+            return false; // uploadedVersion is higher
         }
+
+        return true; // uploadedVersion is equal or lower than lastVersion
+
+        
     }
 }

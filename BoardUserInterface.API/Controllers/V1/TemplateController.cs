@@ -17,6 +17,7 @@ namespace BoardUserInterface.API.Controllers.V1
         private readonly IFileStorage _fileStorage;
         private readonly IExcelMetadataService _excelMetadataService;
         private readonly IVersionValidator _versionValidator;
+        private readonly IVersionComparer _versionComparer;
 
 
         //private readonly ITemplateVersionRepository _templateVersionRepository;
@@ -29,13 +30,14 @@ namespace BoardUserInterface.API.Controllers.V1
 
         private readonly ILogger<TemplateController> _logger;
 
-        public TemplateController(ILogger<TemplateController> logger, IFileUploadService fileUploadService, IExcelMetadataService excelMetadataService, IFileStorage fileStorage, IVersionValidator versionValidator)
+        public TemplateController(ILogger<TemplateController> logger, IFileUploadService fileUploadService, IExcelMetadataService excelMetadataService, IFileStorage fileStorage, IVersionValidator versionValidator, IVersionComparer versionComparer)
         {
             _logger = logger;
             _fileUploadService = fileUploadService;
             _excelMetadataService = excelMetadataService;
             _fileStorage = fileStorage;
             _versionValidator = versionValidator;
+            _versionComparer = versionComparer;
 
         }
 
@@ -79,10 +81,8 @@ namespace BoardUserInterface.API.Controllers.V1
             // Retrieve the latest version number from repository
             string latestVersion = _fileStorage.GetLatestVersionNumber();
 
-            var comparer = new VersionComparer();
-
             // Compare versions
-            if (!comparer.CompareVersions(uploadedFileVersion, latestVersion))
+            if (!_versionComparer.CompareVersions(uploadedFileVersion, latestVersion))
             {
                 throw new OldVersionException($"Already has a template with that version or a newer one.");
             }
