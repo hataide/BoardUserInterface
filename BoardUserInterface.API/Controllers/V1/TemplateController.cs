@@ -1,4 +1,9 @@
+using BoardUserInterface.API.Exceptions;
+using BoardUserInterface.API.FileStorageManagement;
+using BoardUserInterface.API.FileStorageManagement.Models;
 using BoardUserInterface.API.Services;
+using BoardUserInterface.API.Services.Template;
+using BoardUserInterface.API.UploadFiles;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardUserInterface.API.Controllers.V1
@@ -9,49 +14,33 @@ namespace BoardUserInterface.API.Controllers.V1
     [ApiVersion("1.0")] // Specify the API version for this controller
     public class TemplateController : ControllerBase
     {
-        private readonly FileUploadService _fileUploadService;
-
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-
+        private readonly IFileUploadService _fileUploadService;
+        private readonly IFileStorage _fileStorage;
+        private readonly IExcelMetadataService _excelMetadataService;
+        private readonly IVersionValidator _versionValidator;
+        private readonly IVersionComparer _versionComparer;
         private readonly ILogger<TemplateController> _logger;
+        private readonly IUploadTemplateService _uploadTemplateService;
 
-        public TemplateController(ILogger<TemplateController> logger, FileUploadService fileUploadService)
+        public TemplateController(ILogger<TemplateController> logger, IFileUploadService fileUploadService, IExcelMetadataService excelMetadataService, IFileStorage fileStorage, IVersionValidator versionValidator, IVersionComparer versionComparer, IUploadTemplateService uploadTemplateService)
         {
             _logger = logger;
             _fileUploadService = fileUploadService;
-        }
+            _excelMetadataService = excelMetadataService;
+            _fileStorage = fileStorage;
+            _versionValidator = versionValidator;
+            _versionComparer = versionComparer;
+            _uploadTemplateService = uploadTemplateService;
 
-        [HttpGet()]
-        public IEnumerable<WeatherForecast> Get()
-        {
-            // SampleController.cs (inside one of the actions)
-            //throw new Exception("This is a test exception.");
-
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
         }
 
         [HttpPost("upload")]
         public async Task<IActionResult> Upload(IFormFile file)
         {
-            //try
-            //{
-            var filePath = await _fileUploadService.UploadFileAsync(file);
-            return Ok(new { filePath });
-            //}
-            //catch (ArgumentException ex)
-            //{
-            //    return BadRequest(ex.Message);
-            //}
 
+            var uploadedFileVersion = await _uploadTemplateService.Upload(file);
+            return Ok(  $"File uploaded successfully: {file.FileName} with version: {uploadedFileVersion}" );
+        
         }
     }
 }
