@@ -13,13 +13,13 @@ public class FileUploadService : IFileUploadService
 {
     private readonly ILogger<FileUploadService> _logger;
     private readonly IExcelMetadataService _excelMetadataService;
-    private readonly List<FileTemplateInformation> _fileTemplateInformations; // This should be replaced with your actual storage mechanism
+    private readonly List<FileTemplateInformation> _fileTemplateInformations;
 
     public FileUploadService(ILogger<FileUploadService> logger, IExcelMetadataService excelMetadataService)
     {
         _logger = logger;
         _excelMetadataService = excelMetadataService;
-        _fileTemplateInformations = new List<FileTemplateInformation>(); // Replace with your actual storage mechanism
+        _fileTemplateInformations = new List<FileTemplateInformation>();
     }
 
     public async Task<string> UploadFileAsync(IFormFile file)
@@ -59,7 +59,7 @@ public class FileUploadService : IFileUploadService
             using (var memoryStream = new MemoryStream())
             {
                 await file.CopyToAsync(memoryStream);
-                memoryStream.Position = 0; // Reset the memory stream position after copying
+                memoryStream.Position = 0;
                 versionNumber = _excelMetadataService.GetVersionNumberFromExcel(memoryStream);
             }
         }
