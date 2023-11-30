@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using BoardUserInterface.API.SwaggerOptions;
 using BoardUserInterface.API.Logging;
 using BoardUserInterface.API.Services;
+using BoardUserInterface.API.UploadFiles;
+using BoardUserInterface.API.FileStorageManagement;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 
 // Configure Serilog
 // Program.cs
@@ -44,7 +47,6 @@ builder.Services.AddApiVersioning(options =>
 // Existing code for Swagger setup
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 
 // Register the API version description provider
 builder.Services.AddVersionedApiExplorer(options =>
@@ -59,7 +61,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
 // Inside Program.cs or Startup.cs in ConfigureServices method
-builder.Services.AddScoped<FileUploadService>();
+builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+builder.Services.AddTransient<IFileUploadService, FileUploadService >();
+builder.Services.AddTransient<IExcelMetadataService, ExcelMetadataService>();
+builder.Services.AddSingleton<IFileStorage>(provider => new FileStorage("versions.json"));
+builder.Services.AddTransient<IVersionValidator, VersionValidator > ();
 
 
 var app = builder.Build();

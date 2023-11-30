@@ -30,7 +30,7 @@
         var errorResponse = new ErrorResponse(context.Response.StatusCode, "Internal Server Error from the custom middleware: " + exception.Message);
 
         // You can log the exception here if needed (e.g., to a file or database)
-        _logger.LogError(exception, "An error occurred while executing SomeAction.");
+        _logger.LogError(exception.Message);
 
         return context.Response.WriteAsync(errorResponse.ToString());
     }
