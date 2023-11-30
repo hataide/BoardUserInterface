@@ -13,6 +13,7 @@ using BoardUserInterface.API.UploadFiles;
 using BoardUserInterface.API.FileStorageManagement;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using DocumentFormat.OpenXml.Bibliography;
+using BoardUserInterface.API.Services.Template;
 
 // Configure Serilog
 // Program.cs
@@ -66,6 +67,7 @@ builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwa
 builder.Services.AddTransient<IFileUploadService, FileUploadService >();
 builder.Services.AddTransient<IExcelMetadataService, ExcelMetadataService>();
 builder.Services.AddTransient<IVersionValidator, VersionValidator > ();
+builder.Services.AddTransient<IUploadTemplateService, UploadTemplateService>();
 
 builder.Services.AddSingleton<IFileStorage>(provider => new FileStorage("versions.json"));
 builder.Services.AddSingleton<IVersionComparer, VersionComparer >();

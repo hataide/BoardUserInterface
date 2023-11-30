@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Folder Include="Logs\" />
+    <Folder Include="Resources\Template\" />
   </ItemGroup>
 
 </Project>

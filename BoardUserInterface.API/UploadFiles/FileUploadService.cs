@@ -1,5 +1,6 @@
 ﻿using BoardUserInterface.API.FileStorageManagement.Models;
 using BoardUserInterface.API.UploadFiles;
+using BoardUserInterface.API.Utils.Helpers;
 using System.Net.Http.Headers;
 
 namespace BoardUserInterface.API.Services;
@@ -24,6 +25,7 @@ public class FileUploadService : IFileUploadService
 
     public async Task<string> UploadFileAsync(IFormFile file)
     {
+        /*
         if (file == null || file.Length == 0)
         {
             throw new ArgumentException("File is empty or null.");
@@ -36,7 +38,7 @@ public class FileUploadService : IFileUploadService
         {
             throw new ArgumentException("Invalid file extension. Only .xlsx and .csv files are allowed.");
         }
-
+        */
         var folderName = Path.Combine("Resources", "Template");
         var filePath = Path.Combine(Directory.GetCurrentDirectory(), folderName);
 
@@ -44,7 +46,8 @@ public class FileUploadService : IFileUploadService
         {
             Directory.CreateDirectory(filePath);
         }
-
+        var fileVersion = _excelMetadataService.GetVersionNumberFromExcel(file.OpenReadStream());
+        var fileName = FileNameHelper.SetNewVersionFileName(file.FileName, fileVersion);
         var fullPath = Path.Combine(filePath, fileName);
 
         using (var stream = new FileStream(fullPath, FileMode.Create))
@@ -53,6 +56,7 @@ public class FileUploadService : IFileUploadService
         }
 
         // After saving the file, extract the version number for .xlsx files
+        /*
         string versionNumber = null;
         if (fileExtension == ".xlsx")
         {
@@ -63,16 +67,9 @@ public class FileUploadService : IFileUploadService
                 versionNumber = _excelMetadataService.GetVersionNumberFromExcel(memoryStream);
             }
         }
+        */
 
-        // Create an instance of FileTemplateInformation and add it to the list
-        var fileTemplateInformation = new FileTemplateInformation
-        {
-            FileName = fileName,
-            VersionNumber = versionNumber
-        };
-        _fileTemplateInformations.Add(fileTemplateInformation);
-
-        _logger.LogInformation($"File uploaded successfully: {fileName} with version: {versionNumber}");
+        _logger.LogInformation($"File uploaded successfully: {fileName}");
         return fullPath;
     }
 }
