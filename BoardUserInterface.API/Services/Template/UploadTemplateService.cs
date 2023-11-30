@@ -38,7 +38,7 @@ public class UploadTemplateService : IUploadTemplateService
 
         SaveToRepository(file.FileName, uploadedFileVersion);
 
-        _ = await _fileUploadService.UploadFileAsync(file);
+        await _fileUploadService.UploadFileAsync(file);
 
         return uploadedFileVersion;
     }
