@@ -3,10 +3,10 @@ using System.Text.Json;
 
 namespace BoardUserInterface.API.FileStorageManagement;
 
-public interface IFileStorage
+public interface IRepositoryStorage
 {
-    List<FileTemplateInformation> Read();
-    void Save(FileTemplateInformation fileData);
+    List<RepositoryTemplateInformation> Read();
+    void Save(RepositoryTemplateInformation fileData);
 
     string GetLatestVersionNumber();
     void RemoveFile(string fileName);
@@ -15,30 +15,30 @@ public interface IFileStorage
     string GetLastFileName();
 }
 
-public class FileStorage : IFileStorage
+public class RepositoryStorage : IRepositoryStorage
 {
     private readonly string filePath;
 
-    public FileStorage(string filePath)
+    public RepositoryStorage(string filePath)
     {
         this.filePath = filePath;
     }
 
-    public List<FileTemplateInformation> Read()
+    public List<RepositoryTemplateInformation> Read()
     {
         if (File.Exists(filePath))
         {
             var json = File.ReadAllText(filePath);
-            return JsonSerializer.Deserialize<List<FileTemplateInformation>>(json);
+            return JsonSerializer.Deserialize<List<RepositoryTemplateInformation>>(json);
         }
 
-        return new List<FileTemplateInformation>();
+        return new List<RepositoryTemplateInformation>();
     }
 
-    public void Save(FileTemplateInformation fileData)
+    public void Save(RepositoryTemplateInformation fileData)
     {
         var result = Read();
-        List<FileTemplateInformation> fileTemplate = new();
+        List<RepositoryTemplateInformation> fileTemplate = new();
 
         if (result is null)
         {
@@ -82,18 +82,6 @@ public class FileStorage : IFileStorage
 
     public void RemoveFile(string fileName)
     {
-        // First, construct the full path of the file to be removed
-        var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "Template", fileName);
-
-        // Check if the file exists before attempting to delete it
-        if (!File.Exists(fullPath))
-        {
-            throw new FileNotFoundException("File not found.", fileName);
-        }
-
-        // Attempt to delete the file from the file system
-        File.Delete(fullPath);
-
         try
         {
             // Now, remove the corresponding entry from the versions.json
@@ -116,32 +104,8 @@ public class FileStorage : IFileStorage
     
     public void RemoveAllFiles()
     {
-        var directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "Template");
-
-        // Check if the directory exists
-        if (Directory.Exists(directoryPath))
-        {
-            // Get all file names within the directory
-            var files = Directory.GetFiles(directoryPath);
-
-            // Loop through each file and delete it
-            foreach (var file in files)
-            {
-                File.Delete(file);
-            }
-
-            // Optionally, log the action if you have a logger available
-            //_logger.LogInformation("All files in the /Resources/Template directory have been deleted.");
-        }
-        else
-        {
-            // Optionally, log a warning or throw an exception if the directory does not exist
-            //_logger.LogWarning("The directory /Resources/Template does not exist.");
-        }
-
-
         // Clear the versions.json by saving an empty list
-        var emptyList = new List<FileTemplateInformation>();
+        var emptyList = new List<RepositoryTemplateInformation>();
         var json = JsonSerializer.Serialize(emptyList);
         File.WriteAllText(filePath, json); // Assuming FilePath is publicly accessible
     }

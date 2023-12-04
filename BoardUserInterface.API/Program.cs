@@ -64,13 +64,13 @@ builder.Services.AddHealthChecks();
 
 // Inside Program.cs or Startup.cs in ConfigureServices method
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-builder.Services.AddTransient<IFileUploadService, FileUploadService >();
+builder.Services.AddTransient<IFileService, FileService >();
 builder.Services.AddTransient<IExcelMetadataService, ExcelMetadataService>();
 builder.Services.AddTransient<IVersionValidator, VersionValidator > ();
-builder.Services.AddTransient<IUploadTemplateService, UploadTemplateService>();
-builder.Services.AddTransient<IRemoveTemplateService, RemoveTemplateService>();
 
-builder.Services.AddSingleton<IFileStorage>(provider => new FileStorage("versions.json"));
+builder.Services.AddTransient<ITemplateService, TemplateService>();
+
+builder.Services.AddSingleton<IRepositoryStorage>(provider => new RepositoryStorage("versions.json"));
 builder.Services.AddSingleton<IVersionComparer, VersionComparer >();
 
 var app = builder.Build();
