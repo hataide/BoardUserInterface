@@ -20,6 +20,7 @@
   <ItemGroup>
     <Folder Include="Logs\" />
     <Folder Include="Resources\Template\" />
+    <Folder Include="Resources\Uploads\" />
   </ItemGroup>
 
 </Project>

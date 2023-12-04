@@ -1,5 +1,4 @@
-﻿using BoardUserInterface.API.Controllers.V1;
-using BoardUserInterface.API.Exceptions;
+﻿using BoardUserInterface.API.Exceptions;
 using BoardUserInterface.API.FileStorageManagement;
 using BoardUserInterface.API.FileStorageManagement.Models;
 using BoardUserInterface.API.UploadFiles;
@@ -9,38 +8,41 @@ using System.Net.Http.Headers;
 
 namespace BoardUserInterface.API.Services.Template;
 
-public interface IUploadTemplateService
+public interface ITemplateService
 {
+    (string fileName, string version) RemoveLastVersion();
+    List<(string filename, string version)> RemoveAllVersionsAsync();
     Task<string> Upload(IFormFile file);
     (byte[] fileContent, string contentType, string fileName) DownloadLatestFile();
 }
 
-public class UploadTemplateService : IUploadTemplateService
+public class TemplateService : ITemplateService
 {
-    private readonly IFileUploadService _fileUploadService;
-    private readonly IFileStorage _fileStorage;
+    private readonly IFileService _fileService;
+    private readonly IRepositoryStorage _repositoryStorage;
     private readonly IExcelMetadataService _excelMetadataService;
     private readonly IVersionValidator _versionValidator;
     private readonly IVersionComparer _versionComparer;
+    private readonly ILogger<FileService> _logger;
 
-    public UploadTemplateService(IFileUploadService fileUploadService, IExcelMetadataService excelMetadataService, IFileStorage fileStorage, IVersionValidator versionValidator, IVersionComparer versionComparer)
+    public TemplateService(IFileService fileService, IExcelMetadataService excelMetadataService, IRepositoryStorage repositoryStorage, IVersionValidator versionValidator, IVersionComparer versionComparer, ILogger<FileService> logger)
     {
-        _fileUploadService = fileUploadService;
+        _fileService = fileService;
         _excelMetadataService = excelMetadataService;
-        _fileStorage = fileStorage;
+        _repositoryStorage = repositoryStorage;
         _versionValidator = versionValidator;
         _versionComparer = versionComparer;
-
+        _logger = logger;
     }
+
     public async Task<string> Upload(IFormFile file)
     {
         var uploadedFileVersion = TryGetFileVersion(file);
         // If the version is newer, store the file and update the version number in the repository
 
-
         SaveToRepository(file.FileName, uploadedFileVersion);
 
-        await _fileUploadService.UploadFileAsync(file);
+        await _fileService.UploadFileAsync(file);
 
         return uploadedFileVersion;
     }
@@ -48,7 +50,7 @@ public class UploadTemplateService : IUploadTemplateService
     private void SaveToRepository(string fileName, string uploadedFileVersion)
     {
         var newFileName = FileNameHelper.SetNewVersionFileName(fileName, uploadedFileVersion);
-        _fileStorage.Save(new FileTemplateInformation() { FileName = newFileName, VersionNumber = uploadedFileVersion });
+        _repositoryStorage.Save(new RepositoryTemplateInformation() { FileName = newFileName, VersionNumber = uploadedFileVersion });
     }
 
     private string TryGetFileVersion(IFormFile file)
@@ -86,7 +88,7 @@ public class UploadTemplateService : IUploadTemplateService
         }
 
         // Retrieve the latest version number from repository
-        string latestVersion = _fileStorage.GetLatestVersionNumber();
+        string latestVersion = _repositoryStorage.GetLatestVersionNumber();
 
         // Compare versions
         if (!_versionComparer.CompareVersions(uploadedFileVersion, latestVersion))
@@ -97,23 +99,54 @@ public class UploadTemplateService : IUploadTemplateService
         return uploadedFileVersion;
     }
 
- 
-    public (byte[] fileContent, string contentType, string fileName) DownloadLatestFile()
+
+    public (string fileName, string version) RemoveLastVersion()
     {
-        var latestFile = _fileStorage.GetLatestFile();
-        var folderName = Path.Combine("Resources", "Template");
-        var filePath = Path.Combine(Directory.GetCurrentDirectory(), folderName, latestFile.FileName);
-        var fileContent = System.IO.File.ReadAllBytes(filePath);
-
-        // Use FileExtensionContentTypeProvider to determine the content type
-        var provider = new FileExtensionContentTypeProvider();
-        if (!provider.TryGetContentType(latestFile.FileName, out var contentType))
+        try
         {
-            contentType = "application/octet-stream"; // Default content type if none is found
-        }
+            // Retrieve the latest version number from the repository
+            string latestVersion = _repositoryStorage.GetLatestVersionNumber();
 
-        return (fileContent, contentType, latestFile.FileName);
+            // Retrive the last file name from the repository
+            string fileName = _repositoryStorage.GetLastFileName();
+            if (string.IsNullOrEmpty(fileName))
+            {
+                throw new NoVersionException("No version found to remove.");
+            }
+
+            // Remove from the repo
+            _repositoryStorage.RemoveFile(fileName);
+            // Remove file from system
+            _fileService.RemoveFile(fileName);
+
+            _logger.LogInformation($"Last version of {fileName} was removed successfully");
+
+            return (fileName, latestVersion);
+
+        }
+        catch
+        {
+            throw new NoVersionException("Failed to remove the last version of the Excel file.");
+        }
     }
 
+    public List<(string filename, string version)> RemoveAllVersionsAsync()
+    {
+        try
+        {
+            var files = _repositoryStorage.Read();
+            // Remove all files from repo
+            _repositoryStorage.RemoveAllFiles();
+            // Remove all files from system
+            _fileService.RemoveAllFiles();
 
+            _logger.LogInformation($"All versions were removed successfully");
+
+            return files.Select(p => (p.FileName, p.VersionNumber)).ToList();
+        }
+        catch
+        {
+            throw new NoVersionException("Failed to remove the last version of the Excel file.");
+        }
+    }
 }

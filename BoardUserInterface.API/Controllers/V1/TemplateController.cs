@@ -1,9 +1,4 @@
-using BoardUserInterface.API.Exceptions;
-using BoardUserInterface.API.FileStorageManagement;
-using BoardUserInterface.API.FileStorageManagement.Models;
-using BoardUserInterface.API.Services;
 using BoardUserInterface.API.Services.Template;
-using BoardUserInterface.API.UploadFiles;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardUserInterface.API.Controllers.V1
@@ -14,57 +9,35 @@ namespace BoardUserInterface.API.Controllers.V1
     [ApiVersion("1.0")] // Specify the API version for this controller
     public class TemplateController : ControllerBase
     {
-        private readonly IFileUploadService _fileUploadService;
-        private readonly IFileStorage _fileStorage;
-        private readonly IExcelMetadataService _excelMetadataService;
-        private readonly IVersionValidator _versionValidator;
-        private readonly IVersionComparer _versionComparer;
-        private readonly ILogger<TemplateController> _logger;
-        private readonly IUploadTemplateService _uploadTemplateService;
+        private readonly ITemplateService _templateService;
 
-        public TemplateController(ILogger<TemplateController> logger, IFileUploadService fileUploadService, IExcelMetadataService excelMetadataService, IFileStorage fileStorage, IVersionValidator versionValidator, IVersionComparer versionComparer, IUploadTemplateService uploadTemplateService)
+        public TemplateController(ITemplateService templateService)
         {
-            _logger = logger;
-            _fileUploadService = fileUploadService;
-            _excelMetadataService = excelMetadataService;
-            _fileStorage = fileStorage;
-            _versionValidator = versionValidator;
-            _versionComparer = versionComparer;
-            _uploadTemplateService = uploadTemplateService;
-
+            _templateService = templateService;
         }
 
         [HttpPost("upload")]
         public async Task<IActionResult> Upload(IFormFile file)
         {
 
-            var uploadedFileVersion = await _uploadTemplateService.Upload(file);
-            return Ok($"File uploaded successfully: {file.FileName} with version: {uploadedFileVersion}");
-
+            var uploadedFileVersion = await _templateService.Upload(file);
+            return Ok(  $"File uploaded successfully: {file.FileName} with version: {uploadedFileVersion}" );
+        
         }
 
-
-        [HttpGet("download")]
-        public IActionResult Download()
+        [HttpDelete("remove-version")]
+        public async Task<IActionResult> RemoveVersion()
         {
-            try
-            {
-                // Use the download service to get the latest file
-                var (fileContent, contentType, fileName) = _uploadTemplateService.DownloadLatestFile();
-                return File(fileContent, contentType, fileName);
-            }
+            var (fileName, version) = _templateService.RemoveLastVersion();
+            return Ok( $"Version {version} of {fileName} was removed successfully." );
+       
+        }
 
-            catch (FileNotFoundException fnfEx)
-            {
-                _logger.LogError(fnfEx, "File not found.");
-                return NotFound("The requested file is not available.");
-            }
-
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while downloading the latest file version.");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request.");
-            }
+        [HttpDelete("remove-all-versions")]
+        public async Task<IActionResult> RemoveAllVersions()
+        {
+            var files = _templateService.RemoveAllVersionsAsync();
+            return Ok("All template versions have been removed successfully.");
         }
     }
 }
