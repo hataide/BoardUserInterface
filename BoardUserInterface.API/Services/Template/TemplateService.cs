@@ -149,4 +149,21 @@ public class TemplateService : ITemplateService
             throw new NoVersionException("Failed to remove the last version of the Excel file.");
         }
     }
+
+    public (byte[] fileContent, string contentType, string fileName) DownloadLatestFile()
+    {
+        var latestFile = _repositoryStorage.GetLatestFile();
+        var folderName = Path.Combine("Resources", "Template");
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(), folderName, latestFile.FileName);
+        var fileContent = System.IO.File.ReadAllBytes(filePath);
+
+        // Use FileExtensionContentTypeProvider to determine the content type
+        var provider = new FileExtensionContentTypeProvider();
+        if (!provider.TryGetContentType(latestFile.FileName, out var contentType))
+        {
+            contentType = "application/octet-stream"; // Default content type if none is found
+        }
+
+        return (fileContent, contentType, latestFile.FileName);
+    }
 }

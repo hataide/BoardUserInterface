@@ -73,8 +73,6 @@ builder.Services.AddTransient<ITemplateService, TemplateService>();
 builder.Services.AddSingleton<IRepositoryStorage>(provider => new RepositoryStorage("versions.json"));
 builder.Services.AddSingleton<IVersionComparer, VersionComparer >();
 
-builder.Services.AddTransient<IUploadTemplateService, UploadTemplateService>();
-
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();

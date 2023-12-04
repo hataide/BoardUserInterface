@@ -13,6 +13,8 @@ public interface IRepositoryStorage
 
     void RemoveAllFiles();
     string GetLastFileName();
+
+    RepositoryTemplateInformation GetLatestFile();
 }
 
 public class RepositoryStorage : IRepositoryStorage
@@ -108,5 +110,23 @@ public class RepositoryStorage : IRepositoryStorage
         var emptyList = new List<RepositoryTemplateInformation>();
         var json = JsonSerializer.Serialize(emptyList);
         File.WriteAllText(filePath, json); // Assuming FilePath is publicly accessible
+    }
+
+    public RepositoryTemplateInformation GetLatestFile()
+    {
+        var files = Read();
+        if (files == null || !files.Any())
+        {
+            throw new FileNotFoundException("No files available.");
+        }
+
+        // Sort the files by VersionNumber in descending order and select the first one
+        var latestFile = files.OrderByDescending(f => Version.Parse(f.VersionNumber)).FirstOrDefault();
+        if (latestFile == null)
+        {
+            throw new FileNotFoundException("No files available.");
+        }
+
+        return latestFile;
     }
 }
