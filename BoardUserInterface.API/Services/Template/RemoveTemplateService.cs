@@ -1,19 +1,24 @@
 ﻿using BoardUserInterface.API.Exceptions;
 using BoardUserInterface.API.FileStorageManagement;
+using BoardUserInterface.API.FileStorageManagement.Models;
+using System.Text.Json;
 
 namespace BoardUserInterface.API.Services.Template;
 public interface IRemoveTemplateService
 {
     Task<string> RemoveLastVersion();
+    Task RemoveAllVersionsAsync();
 }
 
 public class RemoveTemplateService : IRemoveTemplateService
 {
     private readonly IFileStorage _fileStorage;
+    private readonly ILogger _logger;
 
-    public RemoveTemplateService(IFileStorage fileStorage)
+    public RemoveTemplateService(IFileStorage fileStorage, ILogger logger)
     {
         _fileStorage = fileStorage;
+        _logger = logger;
     }
 
     public async Task<string> RemoveLastVersion()
@@ -32,6 +37,7 @@ public class RemoveTemplateService : IRemoveTemplateService
             
             // Remove the file
             _fileStorage.RemoveFile(fileName);
+            _logger.LogInformation($"Last version of {fileName} was removed successfully");
 
             return fileName;
 
@@ -41,4 +47,23 @@ public class RemoveTemplateService : IRemoveTemplateService
             throw new NoVersionException("Failed to remove the last version of the Excel file.");
         }
     }
+
+    public async Task RemoveAllVersionsAsync()
+    {
+
+        try
+        {
+            
+            // Remove all files
+            _fileStorage.RemoveAllFiles();
+            _logger.LogInformation($"All versions were removed successfully");
+
+        }
+        catch
+        {
+            throw new NoVersionException("Failed to remove the last version of the Excel file.");
+        }
+
+    }
+
 }

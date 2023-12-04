@@ -53,6 +53,11 @@ namespace BoardUserInterface.API.Controllers.V1
        
         }
 
-
+        [HttpDelete("remove-all-versions")]
+        public async Task<IActionResult> RemoveAllVersions()
+        {
+            await _removeTemplateService.RemoveAllVersionsAsync();
+            return Ok("All template versions have been removed successfully.");
+        }
     }
 }
