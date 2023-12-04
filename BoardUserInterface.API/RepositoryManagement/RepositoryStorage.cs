@@ -74,7 +74,7 @@ public class RepositoryStorage : IRepositoryStorage
 
         if (result is null || !result.Any())
         {
-            return "";
+            return string.Empty;
         }
 
         return result.Last().FileName;
