@@ -68,6 +68,7 @@ builder.Services.AddTransient<IFileUploadService, FileUploadService >();
 builder.Services.AddTransient<IExcelMetadataService, ExcelMetadataService>();
 builder.Services.AddTransient<IVersionValidator, VersionValidator > ();
 builder.Services.AddTransient<IUploadTemplateService, UploadTemplateService>();
+builder.Services.AddTransient<IRemoveTemplateService, RemoveTemplateService>();
 
 builder.Services.AddSingleton<IFileStorage>(provider => new FileStorage("versions.json"));
 builder.Services.AddSingleton<IVersionComparer, VersionComparer >();

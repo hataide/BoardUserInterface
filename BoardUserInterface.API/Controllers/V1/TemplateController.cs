@@ -14,23 +14,25 @@ namespace BoardUserInterface.API.Controllers.V1
     [ApiVersion("1.0")] // Specify the API version for this controller
     public class TemplateController : ControllerBase
     {
-        private readonly IFileUploadService _fileUploadService;
-        private readonly IFileStorage _fileStorage;
-        private readonly IExcelMetadataService _excelMetadataService;
-        private readonly IVersionValidator _versionValidator;
-        private readonly IVersionComparer _versionComparer;
-        private readonly ILogger<TemplateController> _logger;
+        //private readonly IFileUploadService _fileUploadService;
+        //private readonly IFileStorage _fileStorage;
+        //private readonly IExcelMetadataService _excelMetadataService;
+        //private readonly IVersionValidator _versionValidator;
+        //private readonly IVersionComparer _versionComparer;
+        //private readonly ILogger<TemplateController> _logger;
         private readonly IUploadTemplateService _uploadTemplateService;
+        private readonly IRemoveTemplateService _removeTemplateService;
 
-        public TemplateController(ILogger<TemplateController> logger, IFileUploadService fileUploadService, IExcelMetadataService excelMetadataService, IFileStorage fileStorage, IVersionValidator versionValidator, IVersionComparer versionComparer, IUploadTemplateService uploadTemplateService)
+        public TemplateController(IUploadTemplateService uploadTemplateService, IRemoveTemplateService removeTemplateService)
         {
-            _logger = logger;
-            _fileUploadService = fileUploadService;
-            _excelMetadataService = excelMetadataService;
-            _fileStorage = fileStorage;
-            _versionValidator = versionValidator;
-            _versionComparer = versionComparer;
+            //_logger = logger;
+            //_fileUploadService = fileUploadService;
+            //_excelMetadataService = excelMetadataService;
+            //_fileStorage = fileStorage;
+            //_versionValidator = versionValidator;
+            //_versionComparer = versionComparer;
             _uploadTemplateService = uploadTemplateService;
+            _removeTemplateService = removeTemplateService;
 
         }
 
@@ -42,5 +44,15 @@ namespace BoardUserInterface.API.Controllers.V1
             return Ok(  $"File uploaded successfully: {file.FileName} with version: {uploadedFileVersion}" );
         
         }
+
+        [HttpDelete("remove-version")]
+        public async Task<IActionResult> RemoveVersion()
+        {
+            var fileName = await _removeTemplateService.RemoveLastVersion();
+            return Ok( $"Last version of {fileName} was removed successfully." );
+       
+        }
+
+
     }
 }

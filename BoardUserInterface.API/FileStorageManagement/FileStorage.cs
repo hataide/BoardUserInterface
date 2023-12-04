@@ -9,6 +9,9 @@ public interface IFileStorage
     void Save(FileTemplateInformation fileData);
 
     string GetLatestVersionNumber();
+    void RemoveFile(string fileName);
+
+    string GetLastFileName();
 }
 
 public class FileStorage : IFileStorage
@@ -62,7 +65,51 @@ public class FileStorage : IFileStorage
 
         return result.Last().VersionNumber;
     }
-    
-    
 
+    public string GetLastFileName()
+    {
+
+        var result = Read();
+
+        if (result is null || !result.Any())
+        {
+            return "";
+        }
+
+        return result.Last().FileName;
+    }
+
+    public void RemoveFile(string fileName)
+    {
+        // First, construct the full path of the file to be removed
+        var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "Template", fileName);
+
+        // Check if the file exists before attempting to delete it
+        if (!File.Exists(fullPath))
+        {
+            throw new FileNotFoundException("File not found.", fileName);
+        }
+
+        // Attempt to delete the file from the file system
+        File.Delete(fullPath);
+
+        try
+        {
+            // Now, remove the corresponding entry from the versions.json
+            var allFiles = Read();
+            var fileToRemove = allFiles.FirstOrDefault(f => f.FileName == fileName);
+
+            if (fileToRemove != null)
+            {
+                allFiles.Remove(fileToRemove);
+                var json = JsonSerializer.Serialize(allFiles);
+                File.WriteAllText(filePath, json);
+            }
+        }
+        catch (Exception ex)
+        {
+            // Rethrow the exception to be handled by the caller
+            throw new Exception($"Failed to remove '{fileName}' from repository.", ex);
+        }
+    }
 }
