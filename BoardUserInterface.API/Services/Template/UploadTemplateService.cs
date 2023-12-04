@@ -4,6 +4,7 @@ using BoardUserInterface.API.FileStorageManagement;
 using BoardUserInterface.API.FileStorageManagement.Models;
 using BoardUserInterface.API.UploadFiles;
 using BoardUserInterface.API.Utils.Helpers;
+using Microsoft.AspNetCore.StaticFiles;
 using System.Net.Http.Headers;
 
 namespace BoardUserInterface.API.Services.Template;
@@ -11,6 +12,7 @@ namespace BoardUserInterface.API.Services.Template;
 public interface IUploadTemplateService
 {
     Task<string> Upload(IFormFile file);
+    (byte[] fileContent, string contentType, string fileName) DownloadLatestFile();
 }
 
 public class UploadTemplateService : IUploadTemplateService
@@ -94,4 +96,24 @@ public class UploadTemplateService : IUploadTemplateService
 
         return uploadedFileVersion;
     }
+
+ 
+    public (byte[] fileContent, string contentType, string fileName) DownloadLatestFile()
+    {
+        var latestFile = _fileStorage.GetLatestFile();
+        var folderName = Path.Combine("Resources", "Template");
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(), folderName, latestFile.FileName);
+        var fileContent = System.IO.File.ReadAllBytes(filePath);
+
+        // Use FileExtensionContentTypeProvider to determine the content type
+        var provider = new FileExtensionContentTypeProvider();
+        if (!provider.TryGetContentType(latestFile.FileName, out var contentType))
+        {
+            contentType = "application/octet-stream"; // Default content type if none is found
+        }
+
+        return (fileContent, contentType, latestFile.FileName);
+    }
+
+
 }

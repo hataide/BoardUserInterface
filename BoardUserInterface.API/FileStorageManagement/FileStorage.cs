@@ -7,6 +7,7 @@ public interface IFileStorage
 {
     List<FileTemplateInformation> Read();
     void Save(FileTemplateInformation fileData);
+    FileTemplateInformation GetLatestFile();
 
     string GetLatestVersionNumber();
 }
@@ -62,7 +63,24 @@ public class FileStorage : IFileStorage
 
         return result.Last().VersionNumber;
     }
-    
-    
+
+    public FileTemplateInformation GetLatestFile()
+    {
+        var files = Read();
+        if (files == null || !files.Any())
+        {
+            throw new FileNotFoundException("No files available.");
+        }
+
+        // Sort the files by VersionNumber in descending order and select the first one
+        var latestFile = files.OrderByDescending(f => Version.Parse(f.VersionNumber)).FirstOrDefault();
+        if (latestFile == null)
+        {
+            throw new FileNotFoundException("No files available.");
+        }
+
+        return latestFile;
+    }
+
 
 }

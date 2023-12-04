@@ -72,6 +72,8 @@ builder.Services.AddTransient<IUploadTemplateService, UploadTemplateService>();
 builder.Services.AddSingleton<IFileStorage>(provider => new FileStorage("versions.json"));
 builder.Services.AddSingleton<IVersionComparer, VersionComparer >();
 
+builder.Services.AddTransient<IUploadTemplateService, UploadTemplateService>();
+
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();

@@ -8,6 +8,7 @@ namespace BoardUserInterface.API.Services;
 public interface IFileUploadService
 {
     Task UploadFileAsync(IFormFile file);
+    Task DownloadFileAsync();
 }
 
 public class FileUploadService : IFileUploadService
@@ -41,5 +42,10 @@ public class FileUploadService : IFileUploadService
         }
 
         _logger.LogInformation($"File uploaded successfully: {fileName}");
+    }
+
+    public async Task DownloadFileAsync()
+    {
+
     }
 }
