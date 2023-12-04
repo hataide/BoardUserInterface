@@ -15,7 +15,7 @@ public class RemoveTemplateService : IRemoveTemplateService
     private readonly IFileStorage _fileStorage;
     private readonly ILogger _logger;
 
-    public RemoveTemplateService(IFileStorage fileStorage, ILogger logger)
+    public RemoveTemplateService(IFileStorage fileStorage, ILogger<FileUploadService> logger)
     {
         _fileStorage = fileStorage;
         _logger = logger;
@@ -37,6 +37,7 @@ public class RemoveTemplateService : IRemoveTemplateService
             
             // Remove the file
             _fileStorage.RemoveFile(fileName);
+
             _logger.LogInformation($"Last version of {fileName} was removed successfully");
 
             return fileName;
@@ -56,6 +57,7 @@ public class RemoveTemplateService : IRemoveTemplateService
             
             // Remove all files
             _fileStorage.RemoveAllFiles();
+
             _logger.LogInformation($"All versions were removed successfully");
 
         }
