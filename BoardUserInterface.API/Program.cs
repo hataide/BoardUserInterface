@@ -1,6 +1,9 @@
 using BoardUserInterface.API.Logging;
 using BoardUserInterface.API.SwaggerOptions;
-using BoardUserInterface.FileService;
+using BoardUserInterface.FileService.Helpers.ExcelMetadata;
+using BoardUserInterface.FileService.Helpers.VersionComparer;
+using BoardUserInterface.FileService.Helpers.VersionComparer.VersionComparer;
+using BoardUserInterface.FileService.Helpers.VersionValidator;
 using BoardUserInterface.FileService.Service;
 using BoardUserInterface.Repository;
 using BoardUserInterface.Service.Template;
@@ -63,13 +66,13 @@ builder.Services.AddHealthChecks();
 // Inside Program.cs or Startup.cs in ConfigureServices method
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 builder.Services.AddTransient<IFileService, FileService >();
-builder.Services.AddTransient<IExcelMetadataService, ExcelMetadataService>();
-builder.Services.AddTransient<IVersionValidator, VersionValidator > ();
+builder.Services.AddTransient<IExcelMetadataHelper, ExcelMetadataHelper>();
+builder.Services.AddTransient<IVersionValidatorHelper, VersionValidatorHelper > ();
 
 builder.Services.AddTransient<ITemplateService, TemplateService>();
 
 builder.Services.AddSingleton<IRepositoryStorage>(provider => new RepositoryStorage("versions.json"));
-builder.Services.AddSingleton<IVersionComparer, VersionComparer >();
+builder.Services.AddSingleton<IVersionComparerHelper, VersionComparerHelper >();
 
 var app = builder.Build();
 
