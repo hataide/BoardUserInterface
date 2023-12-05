@@ -115,14 +115,14 @@ public class RepositoryStorage : IRepositoryStorage
     public RepositoryTemplateInformation GetLatestFile()
     {
         var files = Read();
-        if (files == null || !files.Any())
+        if (files is null || !files.Any())
         {
             throw new FileNotFoundException("No files available.");
         }
 
         // Sort the files by VersionNumber in descending order and select the first one
         var latestFile = files.OrderByDescending(f => Version.Parse(f.VersionNumber)).FirstOrDefault();
-        if (latestFile == null)
+        if (latestFile is null)
         {
             throw new FileNotFoundException("Last version was not available");
         }

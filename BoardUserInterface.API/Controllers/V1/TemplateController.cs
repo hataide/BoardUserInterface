@@ -11,12 +11,10 @@ namespace BoardUserInterface.API.Controllers.V1
     public class TemplateController : ControllerBase
     {
         private readonly ITemplateService _templateService;
-        private readonly ILogger<FileService> _logger;
 
-        public TemplateController(ITemplateService templateService, ILogger<FileService> logger)
+        public TemplateController(ITemplateService templateService)
         {
             _templateService = templateService;
-            _logger = logger;
     }
 
         [HttpPost("upload")]
