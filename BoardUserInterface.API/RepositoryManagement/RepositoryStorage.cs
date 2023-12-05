@@ -124,7 +124,7 @@ public class RepositoryStorage : IRepositoryStorage
         var latestFile = files.OrderByDescending(f => Version.Parse(f.VersionNumber)).FirstOrDefault();
         if (latestFile == null)
         {
-            throw new FileNotFoundException("No files available.");
+            throw new FileNotFoundException("Last version was not available");
         }
 
         return latestFile;

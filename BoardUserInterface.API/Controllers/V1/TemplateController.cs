@@ -46,24 +46,9 @@ namespace BoardUserInterface.API.Controllers.V1
         [HttpGet("download")]
         public IActionResult Download()
         {
-            try
-            {
-                // Use the download service to get the latest file
-                var (fileContent, contentType, fileName) = _templateService.DownloadLatestFile();
-                return File(fileContent, contentType, fileName);
-            }
-
-            catch (FileNotFoundException fnfEx)
-            {
-                _logger.LogError(fnfEx, "File not found.");
-                return NotFound("The requested file is not available.");
-            }
-
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while downloading the latest file version.");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request.");
-            }
+            // Use the download service to get the latest file
+            var (fileContent, contentType, fileName) = _templateService.DownloadLatestFile();
+            return File(fileContent, contentType, fileName);
         }
     }
 }
