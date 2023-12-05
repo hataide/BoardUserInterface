@@ -1,5 +1,4 @@
-using BoardUserInterface.API.Services;
-using BoardUserInterface.API.Services.Template;
+using BoardUserInterface.Service.Template;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardUserInterface.API.Controllers.V1

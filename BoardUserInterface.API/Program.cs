@@ -1,19 +1,17 @@
+using BoardUserInterface.API.Logging;
+using BoardUserInterface.API.SwaggerOptions;
+using BoardUserInterface.FileService;
+using BoardUserInterface.FileService.Service;
+using BoardUserInterface.Repository;
+using BoardUserInterface.Service.Template;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Json;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using BoardUserInterface.API.SwaggerOptions;
-using BoardUserInterface.API.Logging;
-using BoardUserInterface.API.Services;
-using BoardUserInterface.API.UploadFiles;
-using BoardUserInterface.API.FileStorageManagement;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
-using DocumentFormat.OpenXml.Bibliography;
-using BoardUserInterface.API.Services.Template;
 
 // Configure Serilog
 // Program.cs

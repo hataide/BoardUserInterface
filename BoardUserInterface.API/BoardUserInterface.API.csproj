@@ -21,6 +21,11 @@
     <Folder Include="Logs\" />
     <Folder Include="Resources\Template\" />
     <Folder Include="Resources\Uploads\" />
+    <Folder Include="Utils\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BoardUserInterface.Service\BoardUserInterface.Service.csproj" />
   </ItemGroup>
 
 </Project>
