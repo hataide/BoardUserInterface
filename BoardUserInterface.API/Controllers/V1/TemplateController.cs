@@ -1,3 +1,4 @@
+using BoardUserInterface.API.Services;
 using BoardUserInterface.API.Services.Template;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,23 +15,23 @@ namespace BoardUserInterface.API.Controllers.V1
         public TemplateController(ITemplateService templateService)
         {
             _templateService = templateService;
-        }
+    }
 
         [HttpPost("upload")]
         public async Task<IActionResult> Upload(IFormFile file)
         {
 
             var uploadedFileVersion = await _templateService.Upload(file);
-            return Ok(  $"File uploaded successfully: {file.FileName} with version: {uploadedFileVersion}" );
-        
+            return Ok($"File uploaded successfully: {file.FileName} with version: {uploadedFileVersion}");
+
         }
 
         [HttpDelete("remove-version")]
         public async Task<IActionResult> RemoveVersion()
         {
             var (fileName, version) = _templateService.RemoveLastVersion();
-            return Ok( $"Version {version} of {fileName} was removed successfully." );
-       
+            return Ok($"Version {version} of {fileName} was removed successfully.");
+
         }
 
         [HttpDelete("remove-all-versions")]
@@ -38,6 +39,14 @@ namespace BoardUserInterface.API.Controllers.V1
         {
             var files = _templateService.RemoveAllVersionsAsync();
             return Ok("All template versions have been removed successfully.");
+        }
+
+        [HttpGet("download")]
+        public IActionResult Download()
+        {
+            // Use the download service to get the latest file
+            var (fileContent, contentType, fileName) = _templateService.DownloadLatestFile();
+            return File(fileContent, contentType, fileName);
         }
     }
 }

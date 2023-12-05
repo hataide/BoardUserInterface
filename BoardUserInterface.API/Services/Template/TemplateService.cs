@@ -3,7 +3,9 @@ using BoardUserInterface.API.FileStorageManagement;
 using BoardUserInterface.API.FileStorageManagement.Models;
 using BoardUserInterface.API.UploadFiles;
 using BoardUserInterface.API.Utils.Helpers;
+using Microsoft.AspNetCore.StaticFiles;
 using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace BoardUserInterface.API.Services.Template;
 
@@ -12,6 +14,7 @@ public interface ITemplateService
     (string fileName, string version) RemoveLastVersion();
     List<(string filename, string version)> RemoveAllVersionsAsync();
     Task<string> Upload(IFormFile file);
+    (byte[] fileContent, string contentType, string fileName) DownloadLatestFile();
 }
 
 public class TemplateService : ITemplateService
@@ -145,6 +148,30 @@ public class TemplateService : ITemplateService
         catch
         {
             throw new NoVersionException("Failed to remove the last version of the Excel file.");
+        }
+    }
+
+    public (byte[] fileContent, string contentType, string fileName) DownloadLatestFile()
+    {
+        try
+        {
+            var latestFile = _repositoryStorage.GetLatestFile();
+            var folderName = Path.Combine("Resources", "Template");
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), folderName, latestFile.FileName);
+            var fileContent = System.IO.File.ReadAllBytes(filePath);
+
+            // Use FileExtensionContentTypeProvider to determine the content type
+            var provider = new FileExtensionContentTypeProvider();
+            if (!provider.TryGetContentType(latestFile.FileName, out var contentType))
+            {
+                contentType = "application/octet-stream"; // Default content type if none is found
+            }
+            _logger.LogInformation($"Download successful");
+            return (fileContent, contentType, latestFile.FileName);
+        }
+        catch
+        {
+            throw new FileNotFoundException("The requested file is not available.");
         }
     }
 }
