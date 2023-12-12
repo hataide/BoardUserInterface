@@ -74,7 +74,20 @@ builder.Services.AddTransient<ITemplateService, TemplateService>();
 builder.Services.AddSingleton<IRepositoryStorage>(provider => new RepositoryStorage("versions.json"));
 builder.Services.AddSingleton<IVersionComparerHelper, VersionComparerHelper >();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
+
+
 var app = builder.Build();
+
+app.UseCors("AllowAll");
 
 app.UseMiddleware<ExceptionMiddleware>();
 
@@ -92,7 +105,7 @@ if (app.Environment.IsDevelopment())
 }
 
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
