@@ -10,6 +10,8 @@ using BoardUserInterface.Repository.Models;
 using BoardUserInterface.FileService.Helpers.VersionValidator;
 using BoardUserInterface.FileService.Helpers.ExcelMetadata;
 using BoardUserInterface.FileService.Helpers.VersionComparer.VersionComparer;
+using BoardUserInterface.Service.Logging;
+using System;
 namespace BoardUserInterface.Service.Template;
 
 public class TemplateService : ITemplateService
@@ -19,15 +21,21 @@ public class TemplateService : ITemplateService
     private readonly IExcelMetadataHelper _excelMetadataService;
     private readonly IVersionValidatorHelper _versionValidator;
     private readonly IVersionComparerHelper _versionComparer;
+
+    private readonly ILogService _logService;
+
     private readonly ILogger<IFileService> _logger;
 
-    public TemplateService(IFileService fileService, IExcelMetadataHelper excelMetadataService, IRepositoryStorage repositoryStorage, IVersionValidatorHelper versionValidator, IVersionComparerHelper versionComparer, ILogger<IFileService> logger)
+    public TemplateService(IFileService fileService, IExcelMetadataHelper excelMetadataService, IRepositoryStorage repositoryStorage, IVersionValidatorHelper versionValidator, IVersionComparerHelper versionComparer, ILogger<IFileService> logger, ILogService logService)
     {
         _fileService = fileService;
         _excelMetadataService = excelMetadataService;
         _repositoryStorage = repositoryStorage;
         _versionValidator = versionValidator;
         _versionComparer = versionComparer;
+
+        _logService = logService;
+
         _logger = logger;
     }
 
@@ -115,7 +123,9 @@ public class TemplateService : ITemplateService
             // Remove file from system
             _fileService.RemoveFile(fileName);
 
-            _logger.LogInformation($"Last version of {fileName} was removed successfully");
+            _logService.LogMessage("Backend", "Successful", $"Last version of {fileName} was removed successfully", "Information");
+
+            //_logger.LogInformation($"Last version of {fileName} was removed successfully");
 
             return (fileName, latestVersion);
 
@@ -136,7 +146,8 @@ public class TemplateService : ITemplateService
             // Remove all files from system
             _fileService.RemoveAllFiles();
 
-            _logger.LogInformation($"All versions were removed successfully");
+            _logService.LogMessage("Backend", "Successful", "All versions were removed successfully", "Information");
+            //_logger.LogInformation($"All versions were removed successfully");
 
             return files.Select(p => (p.FileName, p.VersionNumber)).ToList();
         }
@@ -161,7 +172,9 @@ public class TemplateService : ITemplateService
             {
                 contentType = "application/octet-stream"; // Default content type if none is found
             }
-            _logger.LogInformation($"Download successful");
+
+            _logService.LogMessage("Backend", "Successful", "Download successful", "Information");
+            //_logger.LogInformation($"Download successful");
             return (fileContent, contentType, latestFile.FileName);
         }
         catch

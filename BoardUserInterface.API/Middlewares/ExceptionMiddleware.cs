@@ -1,13 +1,16 @@
-﻿public class ExceptionMiddleware
+﻿using BoardUserInterface.Service.Logging;
+using DocumentFormat.OpenXml.Office2016.Excel;
+
+public class ExceptionMiddleware
 {
 
     private readonly RequestDelegate _next;
-    private readonly ILogger<ExceptionMiddleware> _logger;
+    private readonly ILogService _logService;
 
-    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
+    public ExceptionMiddleware(RequestDelegate next,ILogService logService )
     {
         _next = next;
-        _logger = logger;
+        _logService = logService;
     }
 
     public async Task InvokeAsync(HttpContext httpContext)
@@ -30,7 +33,8 @@
         var errorResponse = new ErrorResponse(context.Response.StatusCode, "Internal Server Error from the custom middleware: " + exception.Message);
 
         // You can log the exception here if needed (e.g., to a file or database)
-        _logger.LogError(exception, exception.Message);
+        _logService.LogMessage("Backend", "Not Successful", exception.Message, "Error");
+        // _logger.LogError(exception, exception.Message);
 
         return context.Response.WriteAsync(errorResponse.ToString());
     }
