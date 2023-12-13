@@ -157,7 +157,7 @@ public class TemplateService : ITemplateService
         }
     }
 
-    public (byte[] fileContent, string contentType, string fileName) DownloadLatestFile()
+    public (string fileContentBase64, string contentType, string fileName) DownloadLatestFile()
     {
         try
         {
@@ -165,6 +165,8 @@ public class TemplateService : ITemplateService
             var folderName = Path.Combine("Resources", "Template");
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), folderName, latestFile.FileName);
             var fileContent = File.ReadAllBytes(filePath);
+
+            var fileContentBase64 = Convert.ToBase64String(fileContent);
 
             // Use FileExtensionContentTypeProvider to determine the content type
             var provider = new FileExtensionContentTypeProvider();
@@ -174,8 +176,7 @@ public class TemplateService : ITemplateService
             }
 
             _logService.LogMessage("Backend", "Successful", "Download successful", "Information");
-            //_logger.LogInformation($"Download successful");
-            return (fileContent, contentType, latestFile.FileName);
+            return (fileContentBase64, contentType, latestFile.FileName);
         }
         catch
         {

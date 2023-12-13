@@ -14,7 +14,7 @@ public class TemplateController : ControllerBase
     public TemplateController(ITemplateService templateService)
     {
         _templateService = templateService;
-}
+    }
 
     [HttpPost("upload")]
     public async Task<IActionResult> Upload(IFormFile file)
@@ -43,8 +43,18 @@ public class TemplateController : ControllerBase
     [HttpGet("download")]
     public IActionResult Download()
     {
-        // Use the download service to get the latest file
-        var (fileContent, contentType, fileName) = _templateService.DownloadLatestFile();
-        return File(fileContent, contentType, fileName);
+        try
+        {
+            // Use the download service to get the latest file
+            var (fileContentBase64, contentType, fileName) = _templateService.DownloadLatestFile();
+
+            // Return a JSON object with the Base64-encoded file content and file name
+            return Ok(new { FileContent = fileContentBase64, ContentType = contentType, FileName = fileName });
+        }
+        catch (FileNotFoundException ex)
+        {
+            // If there's an error, such as no file found, you can return a NotFound result with a custom message.
+            return NotFound(new { Message = ex.Message });
+        }
     }
 }

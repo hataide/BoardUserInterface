@@ -7,5 +7,5 @@ public interface ITemplateService
     (string fileName, string version) RemoveLastVersion();
     List<(string filename, string version)> RemoveAllVersionsAsync();
     Task<string> Upload(IFormFile file);
-    (byte[] fileContent, string contentType, string fileName) DownloadLatestFile();
+    (string fileContentBase64, string contentType, string fileName) DownloadLatestFile();
 }
