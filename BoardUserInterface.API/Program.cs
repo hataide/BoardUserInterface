@@ -1,19 +1,21 @@
+using BoardUserInterface.API.Logging;
+using BoardUserInterface.API.SwaggerOptions;
+using BoardUserInterface.FileService.Helpers.ExcelMetadata;
+using BoardUserInterface.FileService.Helpers.VersionComparer;
+using BoardUserInterface.FileService.Helpers.VersionComparer.VersionComparer;
+using BoardUserInterface.FileService.Helpers.VersionValidator;
+using BoardUserInterface.FileService.Service;
+using BoardUserInterface.Repository;
+using BoardUserInterface.Service.Logging;
+using BoardUserInterface.Service.Template;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Json;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using BoardUserInterface.API.SwaggerOptions;
-using BoardUserInterface.API.Logging;
-using BoardUserInterface.API.Services;
-using BoardUserInterface.API.UploadFiles;
-using BoardUserInterface.API.FileStorageManagement;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
-using DocumentFormat.OpenXml.Bibliography;
-using BoardUserInterface.API.Services.Template;
 
 // Configure Serilog
 // Program.cs
@@ -65,15 +67,29 @@ builder.Services.AddHealthChecks();
 // Inside Program.cs or Startup.cs in ConfigureServices method
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 builder.Services.AddTransient<IFileService, FileService >();
-builder.Services.AddTransient<IExcelMetadataService, ExcelMetadataService>();
-builder.Services.AddTransient<IVersionValidator, VersionValidator > ();
+builder.Services.AddTransient<IExcelMetadataHelper, ExcelMetadataHelper>();
+builder.Services.AddTransient<IVersionValidatorHelper, VersionValidatorHelper > ();
+builder.Services.AddTransient<ILogService, LogService>();
 
 builder.Services.AddTransient<ITemplateService, TemplateService>();
 
 builder.Services.AddSingleton<IRepositoryStorage>(provider => new RepositoryStorage("versions.json"));
-builder.Services.AddSingleton<IVersionComparer, VersionComparer >();
+builder.Services.AddSingleton<IVersionComparerHelper, VersionComparerHelper >();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
+
 
 var app = builder.Build();
+
+app.UseCors("AllowAll");
 
 app.UseMiddleware<ExceptionMiddleware>();
 
@@ -91,7 +107,7 @@ if (app.Environment.IsDevelopment())
 }
 
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
