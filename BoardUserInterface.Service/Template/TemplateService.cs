@@ -1,17 +1,18 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System.Net.Http.Headers;
-using BoardUserInterface.FileService.Service;
+﻿using BoardUserInterface.Common.Exceptions;
 using BoardUserInterface.Common.Helpers;
-using BoardUserInterface.Common.Exceptions;
-using Microsoft.AspNetCore.StaticFiles;
-using BoardUserInterface.Repository;
-using BoardUserInterface.Repository.Models;
-using BoardUserInterface.FileService.Helpers.VersionValidator;
 using BoardUserInterface.FileService.Helpers.ExcelMetadata;
 using BoardUserInterface.FileService.Helpers.VersionComparer.VersionComparer;
+using BoardUserInterface.FileService.Helpers.VersionValidator;
+using BoardUserInterface.FileService.Service;
+using BoardUserInterface.Helpers;
+using BoardUserInterface.Repository;
+using BoardUserInterface.Repository.Models;
+using BoardUserInterface.Service.Auditing;
 using BoardUserInterface.Service.Logging;
-using System;
+using BoardUserInterface.Service.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.StaticFiles;
+using System.Net.Http.Headers;
 namespace BoardUserInterface.Service.Template;
 
 public class TemplateService : ITemplateService
@@ -21,32 +22,44 @@ public class TemplateService : ITemplateService
     private readonly IExcelMetadataHelper _excelMetadataService;
     private readonly IVersionValidatorHelper _versionValidator;
     private readonly IVersionComparerHelper _versionComparer;
-
     private readonly ILogService _logService;
+    private readonly IAuditService _auditService;
 
-    private readonly ILogger<IFileService> _logger;
 
-    public TemplateService(IFileService fileService, IExcelMetadataHelper excelMetadataService, IRepositoryStorage repositoryStorage, IVersionValidatorHelper versionValidator, IVersionComparerHelper versionComparer, ILogger<IFileService> logger, ILogService logService)
+    public TemplateService(IFileService fileService, IExcelMetadataHelper excelMetadataService, IRepositoryStorage repositoryStorage, IVersionValidatorHelper versionValidator, IVersionComparerHelper versionComparer, ILogService logService, IAuditService auditService)
     {
         _fileService = fileService;
         _excelMetadataService = excelMetadataService;
         _repositoryStorage = repositoryStorage;
         _versionValidator = versionValidator;
         _versionComparer = versionComparer;
-
         _logService = logService;
+        _auditService = auditService;
 
-        _logger = logger;
     }
 
     public async Task<string> Upload(IFormFile file)
     {
         var uploadedFileVersion = TryGetFileVersion(file);
         // If the version is newer, store the file and update the version number in the repository
-
         SaveToRepository(file.FileName, uploadedFileVersion);
 
         await _fileService.UploadFileAsync(file);
+
+        var auditRecord = new AuditRecord
+        {
+            UserId = "system", // Replace with actual user ID if available
+            Timestamp = DateTime.UtcNow,
+            Action = "Upload",
+            TableName = "Templates",
+            // Use the name of the uploaded file as the record identifier
+            RecordId = FileNameHelper.SetNewVersionFileName(file.FileName, uploadedFileVersion), 
+            NewValues = $"Uploaded file version: {uploadedFileVersion}",
+            OldValues = string.Empty // No old values for an upload action
+        };
+
+        // Record the audit event
+        _auditService.RecordAuditAsync(auditRecord);
 
         return uploadedFileVersion;
     }
@@ -125,7 +138,22 @@ public class TemplateService : ITemplateService
 
             _logService.LogMessage("Backend", "Successful", $"Last version of {fileName} was removed successfully", "Information");
 
-            //_logger.LogInformation($"Last version of {fileName} was removed successfully");
+            // Create an audit record for the remove action
+            var auditRecord = new AuditRecord
+            {
+                UserId = "system", // Replace with actual user ID if available
+                Timestamp = DateTime.UtcNow,
+                Action = "RemoveLastVersion",
+                TableName = "Templates",
+                RecordId = fileName, // Use the name of the removed file as the record identifier
+                NewValues = string.Empty, // No new values for a remove action
+                OldValues = $"Removed file version: {latestVersion}"
+            };
+
+            _logService.LogMessage("TESTING AUDIT", "Successful", JsonConverterHelper.SerializeObject(auditRecord) , "Information");
+
+            // Record the audit event
+            _auditService.RecordAuditAsync(auditRecord);
 
             return (fileName, latestVersion);
 
@@ -147,7 +175,22 @@ public class TemplateService : ITemplateService
             _fileService.RemoveAllFiles();
 
             _logService.LogMessage("Backend", "Successful", "All versions were removed successfully", "Information");
-            //_logger.LogInformation($"All versions were removed successfully");
+
+            // Create an audit record for the remove all action
+            var auditRecord = new AuditRecord
+            {
+                UserId = "system", // Replace with actual user ID if available
+                Timestamp = DateTime.UtcNow,
+                Action = "RemoveAllVersions",
+                TableName = "Templates",
+                RecordId = "AllFiles", // Indicate that all files were targeted
+                NewValues = string.Empty, // No new values for a remove all action
+                OldValues = $"Removed all template versions"
+            };
+
+            // Record the audit event
+            _auditService.RecordAuditAsync(auditRecord);
+
 
             return files.Select(p => (p.FileName, p.VersionNumber)).ToList();
         }
@@ -157,7 +200,7 @@ public class TemplateService : ITemplateService
         }
     }
 
-    public (string fileContentBase64, string contentType, string fileName) DownloadLatestFile()
+    public  (string fileContentBase64, string contentType, string fileName) DownloadLatestFile()
     {
         try
         {
@@ -175,7 +218,23 @@ public class TemplateService : ITemplateService
                 contentType = "application/octet-stream"; // Default content type if none is found
             }
 
+            // Create an audit record for the download action
+            var auditRecord = new AuditRecord
+            {
+                UserId = "system", // Replace with actual user ID if available
+                Timestamp = DateTime.UtcNow,
+                Action = "DownloadLatestFile",
+                TableName = "Templates",
+                RecordId = latestFile.FileName, // Use the name of the downloaded file as the record identifier
+                NewValues = $"Downloaded file version: {latestFile.VersionNumber}",
+                OldValues = string.Empty // No old values for a download action
+            };
+
+            // Record the audit event
+            _auditService.RecordAuditAsync(auditRecord);
+
             _logService.LogMessage("Backend", "Successful", "Download successful", "Information");
+
             return (fileContentBase64, contentType, latestFile.FileName);
         }
         catch

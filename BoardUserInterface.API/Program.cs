@@ -6,6 +6,7 @@ using BoardUserInterface.FileService.Helpers.VersionComparer.VersionComparer;
 using BoardUserInterface.FileService.Helpers.VersionValidator;
 using BoardUserInterface.FileService.Service;
 using BoardUserInterface.Repository;
+using BoardUserInterface.Service.Auditing;
 using BoardUserInterface.Service.Logging;
 using BoardUserInterface.Service.Template;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -70,6 +71,7 @@ builder.Services.AddTransient<IFileService, FileService >();
 builder.Services.AddTransient<IExcelMetadataHelper, ExcelMetadataHelper>();
 builder.Services.AddTransient<IVersionValidatorHelper, VersionValidatorHelper > ();
 builder.Services.AddTransient<ILogService, LogService>();
+builder.Services.AddTransient<IAuditService, AuditService>();
 
 builder.Services.AddTransient<ITemplateService, TemplateService>();
 
