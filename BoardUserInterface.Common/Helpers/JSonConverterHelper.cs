@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using BoardUserInterface.Common.Exceptions;
+using Newtonsoft.Json;
 
 namespace BoardUserInterface.Helpers;
 
@@ -27,10 +28,10 @@ public static class JsonConverterHelper
             {
                 return JsonConvert.SerializeObject(obj);
             }
-            catch (Exception ex)
+            catch
             {
                 // Handle or log the serialization exception as needed
-                throw new InvalidOperationException("An error occurred during serialization.", ex);
+                throw new NotAbleToSerializeException("It was not possible to serialize your object into a JSON.");
             }
         }
     }
@@ -47,14 +48,14 @@ public static class JsonConverterHelper
             {
                 return JsonConvert.DeserializeObject<T>(json);
             }
-            catch (Exception ex)
+            catch 
             {
                 // Handle or log the deserialization exception as needed
-                throw new InvalidOperationException("An error occurred during deserialization.", ex);
+                throw new NotAbleToDeserializeException("It was not possible to deserialize your json into your object.");
             }
         }
 
-        throw new InvalidOperationException("CHANGE");
+        throw new NotAJsonException("The object you want to deserialize is not a JSON");
 
         
     }
