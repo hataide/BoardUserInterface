@@ -1,4 +1,5 @@
 using BoardUserInterface.API.Logging;
+using BoardUserInterface.Service.Http;
 using BoardUserInterface.API.SwaggerOptions;
 using BoardUserInterface.FileService.Helpers.ExcelMetadata;
 using BoardUserInterface.FileService.Helpers.VersionComparer;
@@ -86,6 +87,11 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddHttpClient();
+builder.Services.AddTransient<IGenericHttpClient, GenericHttpClient>();
+builder.Services.AddTransient<IGenericService, GenericService>();
+
+
 
 var app = builder.Build();
 
@@ -131,7 +137,7 @@ app.MapHealthChecks("/health", new HealthCheckOptions
                 duration = e.Value.Duration.ToString()
             })
         });
-        context.Response.ContentType = "application/json";
+        //context.Response.ContentType = "application/json";
         await context.Response.WriteAsync(result);
     }
 });

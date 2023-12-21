@@ -12,6 +12,7 @@ using BoardUserInterface.FileService.Helpers.ExcelMetadata;
 using BoardUserInterface.FileService.Helpers.VersionComparer.VersionComparer;
 using BoardUserInterface.Service.Logging;
 using System;
+using BoardUserInterface.Service.Http;
 namespace BoardUserInterface.Service.Template;
 
 public class TemplateService : ITemplateService
@@ -38,7 +39,7 @@ public class TemplateService : ITemplateService
 
         _logger = logger;
     }
-
+    
     public async Task<string> Upload(IFormFile file)
     {
         var uploadedFileVersion = TryGetFileVersion(file);
