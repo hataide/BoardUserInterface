@@ -93,7 +93,13 @@ public class GenericHttpClient : IGenericHttpClient
                 client.DefaultRequestHeaders.Add(header.Key, header.Value);
             }
         }
-        return await client.DeleteAsync(requestUri);
+        var response = await client.DeleteAsync(requestUri);
+        if (!response.IsSuccessStatusCode)
+        {
+            // Log error details here
+            throw new HttpRequestException($"Request failed with status code: {response.StatusCode}");
+        }
+        return response;
     }
     /*
     public async Task<TResponse> PostAsync<TRequest, TResponse>(string requestUri, TRequest content, Dictionary<string, string> headers = null)
@@ -115,7 +121,7 @@ public class GenericHttpClient : IGenericHttpClient
         var responseContent = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<TResponse>(responseContent);
     }*/
-
+    /*
     public async Task<TResponse> PostAsync<TRequest, TResponse>(string requestUri, TRequest content, Dictionary<string, string> headers = null)
     {
         var client = _httpClientFactory.CreateClient();
@@ -141,7 +147,41 @@ public class GenericHttpClient : IGenericHttpClient
         // Deserialize the response content to the specified type
         var responseContent = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<TResponse>(responseContent);
+    }*/
+    public async Task<string> PostAsync<TRequest>(string requestUri, TRequest content, Dictionary<string, string> headers = null)
+    {
+        // Create an HttpClient instance using the IHttpClientFactory.
+        var client = _httpClientFactory.CreateClient();
+
+        // Serialize the request content to JSON.
+        var jsonContent = new StringContent(JsonSerializer.Serialize(content), System.Text.Encoding.UTF8, "application/json");
+
+        // Add any custom headers to the request.
+        if (headers != null)
+        {
+            foreach (var header in headers)
+            {
+                client.DefaultRequestHeaders.Add(header.Key, header.Value);
+            }
+        }
+
+        // Send the POST request.
+        var response = await client.PostAsync(requestUri, jsonContent);
+
+        // Ensure we got a successful response.
+        if (!response.IsSuccessStatusCode)
+        {
+            // If not successful, log and throw an exception with the status code.
+            var errorContent = await response.Content.ReadAsStringAsync();
+            _logger.LogError($"Error posting data. Status code: {response.StatusCode}, Content: {errorContent}");
+            throw new HttpRequestException($"Error posting data. Status code: {response.StatusCode}, Content: {errorContent}");
+        }
+
+        // Read and return the response content as a JSON string.
+        var responseContent = await response.Content.ReadAsStringAsync();
+        return responseContent;
     }
+
 
 
 }

@@ -54,14 +54,14 @@ public class GenericController : ControllerBase
         var result = await _genericService.TestPost(s);
         return Ok(result);
     }
-/*
+
     [HttpDelete("delete-test")]
     public async Task<IActionResult> TestDelete()
     {
         var result = await _genericService.TestDelete();
         return Ok(result);
 
-    }*/
+    }
     /*
     [HttpGet("call-download")]
     public async Task<IActionResult> CallDownload()

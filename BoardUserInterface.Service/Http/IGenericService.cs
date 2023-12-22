@@ -7,9 +7,10 @@ public interface IGenericService
 {
     Task<DownloadResponse> TestGet();
     //Task<string> TestPost(String s); //IFormFile file);
-    Task<string> TestPost<TRequest>(TRequest content);
-    //Task<String> TestDelete();
-    Task<string> CallUploadEndpoint(IFormFile file);
+    //Task<string> TestPost<TRequest>(TRequest content);
+    Task<String> TestPost(String sContent);
+    Task<String> TestDelete();
+    //Task<string> CallUploadEndpoint(IFormFile file);
     //Task<(string FileContentBase64, string ContentType, string FileName)> CallDownloadEndpoint();
     //(string fileName, string version) RemoveLastVersion();
     //List<(string filename, string version)> RemoveAllVersionsAsync();
