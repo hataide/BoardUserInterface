@@ -65,7 +65,15 @@ public class GenericService : IGenericService
         return content;
 
     }
-    
+
+
+    public async Task<string> UpdateData<TRequest>(TRequest data)
+    {
+        var testApiUrl = ServiceEndpoints.TestPut;
+        return await _genericHttpClient.PutAsync(testApiUrl, data);
+    }
+
+
     public async Task<String> TestDelete()
     {
         // Replace with the actual URL of your HttpClientTestApi endpoint

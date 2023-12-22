@@ -9,6 +9,7 @@ public interface IGenericService
     //Task<string> TestPost(String s); //IFormFile file);
     //Task<string> TestPost<TRequest>(TRequest content);
     Task<String> TestPost(String sContent);
+    Task<string> UpdateData<TRequest>(TRequest data);
     Task<String> TestDelete();
     //Task<string> CallUploadEndpoint(IFormFile file);
     //Task<(string FileContentBase64, string ContentType, string FileName)> CallDownloadEndpoint();
