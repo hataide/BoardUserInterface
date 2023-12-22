@@ -5,13 +5,19 @@ using BoardUserInterface.FileService.Helpers.VersionComparer;
 using BoardUserInterface.FileService.Helpers.VersionComparer.VersionComparer;
 using BoardUserInterface.FileService.Helpers.VersionValidator;
 using BoardUserInterface.FileService.Service;
+using BoardUserInterface.Repositories;
 using BoardUserInterface.Repository;
 using BoardUserInterface.Service.Auditing;
+using BoardUserInterface.Service.DataAccess;
 using BoardUserInterface.Service.Logging;
 using BoardUserInterface.Service.Template;
+using BoardUserInterfaces.DataAccess.DataBase;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Events;
@@ -33,6 +39,11 @@ Log.Logger = new LoggerConfiguration()
 // Continue with the rest of the Program.cs setup...
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<BoardUserInterfaceContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("BoardUserInterfaceDatabase")));
+
+
 
 // Use Serilog for logging
 builder.Host.UseSerilog();
@@ -72,8 +83,16 @@ builder.Services.AddTransient<IExcelMetadataHelper, ExcelMetadataHelper>();
 builder.Services.AddTransient<IVersionValidatorHelper, VersionValidatorHelper > ();
 builder.Services.AddTransient<ILogService, LogService>();
 builder.Services.AddTransient<IAuditService, AuditService>();
-
 builder.Services.AddTransient<ITemplateService, TemplateService>();
+
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<IDataAccessService, DataAccessService>();
+
+builder.Services.AddScoped<IAuditRepoService, AuditRepoService>();
+builder.Services.AddScoped<IFileRepoService, FileRepoService>();
+builder.Services.AddScoped<IFilesAuditRepoService, FilesAuditRepoService>();
+builder.Services.AddScoped<ILogsRepoService, LogsRepoService>();
+
 
 builder.Services.AddSingleton<IRepositoryStorage>(provider => new RepositoryStorage("versions.json"));
 builder.Services.AddSingleton<IVersionComparerHelper, VersionComparerHelper >();

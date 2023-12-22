@@ -2,11 +2,11 @@
 
 public class AuditRecord
 {
-    public string UserId { get; set; }
+    public string Files_Audit_Id { get; set; } = string.Empty;
     public DateTime Timestamp { get; set; }
-    public string Action { get; set; }
-    public string TableName { get; set; }
-    public string RecordId { get; set; }
-    public string NewValues { get; set; }
-    public string OldValues { get; set; }
+    public string Action { get; set; } = string.Empty;
+    public string TableName { get; set; } = string.Empty;
+    public string RecordId { get; set; } = string.Empty;
+    public string NewValues { get; set; } = string.Empty;
+    public string OldValues { get; set; } = string.Empty;
 }

@@ -48,7 +48,7 @@ public class TemplateService : ITemplateService
 
         var auditRecord = new AuditRecord
         {
-            UserId = "system", // Replace with actual user ID if available
+            Files_Audit_Id = "system", // Replace with actual user ID if available
             Timestamp = DateTime.UtcNow,
             Action = "Upload",
             TableName = "Templates",
@@ -141,7 +141,7 @@ public class TemplateService : ITemplateService
             // Create an audit record for the remove action
             var auditRecord = new AuditRecord
             {
-                UserId = "system", // Replace with actual user ID if available
+                Files_Audit_Id = "system", // Replace with actual user ID if available
                 Timestamp = DateTime.UtcNow,
                 Action = "RemoveLastVersion",
                 TableName = "Templates",
@@ -179,7 +179,7 @@ public class TemplateService : ITemplateService
             // Create an audit record for the remove all action
             var auditRecord = new AuditRecord
             {
-                UserId = "system", // Replace with actual user ID if available
+                Files_Audit_Id = "system", // Replace with actual user ID if available
                 Timestamp = DateTime.UtcNow,
                 Action = "RemoveAllVersions",
                 TableName = "Templates",
@@ -221,7 +221,6 @@ public class TemplateService : ITemplateService
             // Create an audit record for the download action
             var auditRecord = new AuditRecord
             {
-                UserId = "system", // Replace with actual user ID if available
                 Timestamp = DateTime.UtcNow,
                 Action = "DownloadLatestFile",
                 TableName = "Templates",
