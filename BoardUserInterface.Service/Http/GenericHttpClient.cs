@@ -9,6 +9,7 @@ using BoardUserInterface.Service.Http.Response;
 using BoardUserInterface.FileService.Service;
 using Microsoft.Extensions.Logging;
 using Serilog.Core;
+using BoardUserInterface.Service.Http.Exceptions;
 
 
 namespace BoardUserInterface.Service.Http;
@@ -36,13 +37,16 @@ public class GenericHttpClient : IGenericHttpClient
         }
 
         var response = await client.GetAsync(requestUri);
+        var content = await response.Content.ReadAsStringAsync();
+
         if (!response.IsSuccessStatusCode)
         {
             // Log error details here
-            throw new HttpRequestException($"Request failed with status code: {response.StatusCode}");
+            throw new HttpRequestFailedException(response.StatusCode, content);
+            //throw new HttpRequestException($"Request failed with status code: {response.StatusCode}");
         }
 
-        var content = await response.Content.ReadAsStringAsync();
+       // var content = await response.Content.ReadAsStringAsync();
 
         // Log the raw JSON content for inspection
         _logger.LogInformation("GenericHttpClient", "GetAsync", $"Raw JSON content: {content}", "Information");
@@ -67,7 +71,7 @@ public class GenericHttpClient : IGenericHttpClient
         catch (JsonException jsonEx)
         {
             // Handle JSON deserialization errors
-            throw new InvalidOperationException("Error deserializing the response content.", jsonEx);
+            throw new JsonDeserializationException("Error deserializing the response content.", jsonEx);
         }
     }
 
@@ -85,9 +89,10 @@ public class GenericHttpClient : IGenericHttpClient
         var response = await client.DeleteAsync(requestUri);
         if (!response.IsSuccessStatusCode)
         {
-            // Log error details here
-            throw new HttpRequestException($"Request failed with status code: {response.StatusCode}");
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestFailedException(response.StatusCode, errorContent);
         }
+
         return response;
     }
 
@@ -114,10 +119,8 @@ public class GenericHttpClient : IGenericHttpClient
         // Ensure we got a successful response.
         if (!response.IsSuccessStatusCode)
         {
-            // If not successful, log and throw an exception with the status code.
             var errorContent = await response.Content.ReadAsStringAsync();
-            _logger.LogError($"Error posting data. Status code: {response.StatusCode}, Content: {errorContent}");
-            throw new HttpRequestException($"Error posting data. Status code: {response.StatusCode}, Content: {errorContent}");
+            throw new HttpRequestFailedException(response.StatusCode, errorContent);
         }
 
         // Read and return the response content as a JSON string.
@@ -143,11 +146,10 @@ public class GenericHttpClient : IGenericHttpClient
         // Ensure we got a successful response
         if (!response.IsSuccessStatusCode)
         {
-            // If not successful, log and throw an exception with the status code
             var errorContent = await response.Content.ReadAsStringAsync();
-            _logger.LogError($"Error putting data. Status code: {response.StatusCode}, Content: {errorContent}");
-            throw new HttpRequestException($"Error putting data. Status code: {response.StatusCode}, Content: {errorContent}");
+            throw new HttpRequestFailedException(response.StatusCode, errorContent);
         }
+
         // Read and return the response content as a JSON string
         var responseContent = await response.Content.ReadAsStringAsync();
         return responseContent;
