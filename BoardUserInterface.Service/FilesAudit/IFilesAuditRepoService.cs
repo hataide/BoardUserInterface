@@ -1,4 +1,5 @@
-﻿using BoardUserInterfaces.DataAccess.Models;
+﻿using BoardUserInterfaces.DataAccess.DTOs;
+using BoardUserInterfaces.DataAccess.Models;
 
 namespace BoardUserInterface.Service.DataAccess;
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using BoardUserInterface.Service.DataAccess;
 using BoardUserInterfaces.DataAccess.Models;
+using BoardUserInterfaces.DataAccess.DTOs;
 
 namespace BoardUserInterface.API.Controllers.V1;
 

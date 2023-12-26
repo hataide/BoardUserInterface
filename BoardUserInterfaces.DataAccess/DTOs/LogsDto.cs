@@ -1,4 +1,5 @@
-﻿public class LogsDto
+﻿namespace BoardUserInterfaces.DataAccess.DTOs;
+public class LogsDto
 {
     public string Context { get; set; }
     public string Message { get; set; }

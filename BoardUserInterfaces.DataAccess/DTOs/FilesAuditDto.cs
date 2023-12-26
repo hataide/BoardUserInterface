@@ -1,4 +1,6 @@
-﻿public class FilesAuditDto
+﻿namespace BoardUserInterfaces.DataAccess.DTOs;
+
+public class FilesAuditDto
 {
     public DateTime Timestamp { get; set; }
     public string Action { get; set; }

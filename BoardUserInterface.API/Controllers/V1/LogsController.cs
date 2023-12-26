@@ -1,4 +1,5 @@
 ﻿using BoardUserInterface.Service.DataAccess;
+using BoardUserInterfaces.DataAccess.DTOs;
 using BoardUserInterfaces.DataAccess.Models;
 using Microsoft.AspNetCore.Mvc;
 

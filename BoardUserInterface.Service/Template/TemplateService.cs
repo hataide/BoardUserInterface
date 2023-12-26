@@ -8,8 +8,11 @@ using BoardUserInterface.Helpers;
 using BoardUserInterface.Repository;
 using BoardUserInterface.Repository.Models;
 using BoardUserInterface.Service.Auditing;
+using BoardUserInterface.Service.DataAccess;
 using BoardUserInterface.Service.Logging;
 using BoardUserInterface.Service.Models;
+using BoardUserInterfaces.DataAccess.Models;
+using BoardUserInterfaces.DataAccess.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
 using System.Net.Http.Headers;
@@ -25,8 +28,10 @@ public class TemplateService : ITemplateService
     private readonly ILogService _logService;
     private readonly IAuditService _auditService;
 
+    private readonly IFilesAuditRepoService _filesAuditRepoService;
+    private readonly ILogsRepoService _logsRepoService;
 
-    public TemplateService(IFileService fileService, IExcelMetadataHelper excelMetadataService, IRepositoryStorage repositoryStorage, IVersionValidatorHelper versionValidator, IVersionComparerHelper versionComparer, ILogService logService, IAuditService auditService)
+    public TemplateService(IFileService fileService, IExcelMetadataHelper excelMetadataService, IRepositoryStorage repositoryStorage, IVersionValidatorHelper versionValidator, IVersionComparerHelper versionComparer, ILogService logService, IAuditService auditService, IFilesAuditRepoService filesAuditRepoService, ILogsRepoService logsRepoService)
     {
         _fileService = fileService;
         _excelMetadataService = excelMetadataService;
@@ -36,31 +41,47 @@ public class TemplateService : ITemplateService
         _logService = logService;
         _auditService = auditService;
 
+        _filesAuditRepoService = filesAuditRepoService;
+        _logsRepoService = logsRepoService;
+
     }
 
     public async Task<string> Upload(IFormFile file)
     {
         var uploadedFileVersion = TryGetFileVersion(file);
+
+        // string lastFile = ""; // _repositoryStorage.GetLatestFile();
         // If the version is newer, store the file and update the version number in the repository
         SaveToRepository(file.FileName, uploadedFileVersion);
 
         await _fileService.UploadFileAsync(file);
 
-        var auditRecord = new AuditRecord
+        var filesAuditRecord = new FilesAudit
         {
-            Files_Audit_Id = "system", // Replace with actual user ID if available
+
             Timestamp = DateTime.UtcNow,
-            Action = "Upload",
-            TableName = "Templates",
-            // Use the name of the uploaded file as the record identifier
-            RecordId = FileNameHelper.SetNewVersionFileName(file.FileName, uploadedFileVersion), 
-            NewValues = $"Uploaded file version: {uploadedFileVersion}",
-            OldValues = string.Empty // No old values for an upload action
+            Action = "CREATE",
+            RecordId = 1,
+            Content_old = null,
+            Content_new = null,
+            Version_old = "0.0",
+            Version_new = uploadedFileVersion,
+            Name_old = "",
+            Name_new = file.FileName,
+            Extension_old = "",
+            Extension_new = file.ContentType
         };
+        _ = await _filesAuditRepoService.CreateFilesAuditAsync(filesAuditRecord);
 
-        // Record the audit event
-        _auditService.RecordAuditAsync(auditRecord);
-
+        var newLog = new Logs
+        {
+            Source = "Backend",
+            Context = "Successful",
+            Message = $"Last version of {file.FileName} was uploaded successfully",
+            Type = "Information"
+        };
+        _logsRepoService.CreateLogAsync(newLog);
+        
         return uploadedFileVersion;
     }
 
@@ -122,7 +143,8 @@ public class TemplateService : ITemplateService
         try
         {
             // Retrieve the latest version number from the repository
-            string latestVersion = _repositoryStorage.GetLatestVersionNumber();
+            string latestVersion = null;//_repositoryStorage.GetLatestVersionNumber();
+            var lastFile = _repositoryStorage.GetLatestFile();
 
             // Retrive the last file name from the repository
             string fileName = _repositoryStorage.GetLastFileName();
@@ -135,25 +157,38 @@ public class TemplateService : ITemplateService
             _repositoryStorage.RemoveFile(fileName);
             // Remove file from system
             _fileService.RemoveFile(fileName);
+          
 
-            _logService.LogMessage("Backend", "Successful", $"Last version of {fileName} was removed successfully", "Information");
-
-            // Create an audit record for the remove action
-            var auditRecord = new AuditRecord
+            var filesAuditRecord = new FilesAudit
             {
-                Files_Audit_Id = "system", // Replace with actual user ID if available
+
                 Timestamp = DateTime.UtcNow,
-                Action = "RemoveLastVersion",
-                TableName = "Templates",
-                RecordId = fileName, // Use the name of the removed file as the record identifier
-                NewValues = string.Empty, // No new values for a remove action
-                OldValues = $"Removed file version: {latestVersion}"
+                Action = "DELETE",
+                RecordId = 1,
+                Content_old = null,
+                Content_new = null,
+                Version_old = lastFile.VersionNumber,
+                Version_new = "",
+                Name_old = lastFile.FileName,
+                Name_new = "",
+                Extension_old = "",
+                Extension_new = ""
             };
 
-            _logService.LogMessage("TESTING AUDIT", "Successful", JsonConverterHelper.SerializeObject(auditRecord) , "Information");
 
             // Record the audit event
-            _auditService.RecordAuditAsync(auditRecord);
+            _filesAuditRepoService.CreateFilesAuditAsync(filesAuditRecord);
+
+            _logService.LogMessage("TESTING AUDIT", "Successful", JsonConverterHelper.SerializeObject(filesAuditRecord) , "Information");
+
+            var newLog = new Logs
+            {
+                Source = "Backend",
+                Context = "Successful",
+                Message = $"Last version of {fileName} was removed successfully",
+                Type = "Information"
+            };
+            _logsRepoService.CreateLogAsync(newLog);
 
             return (fileName, latestVersion);
 
@@ -168,29 +203,43 @@ public class TemplateService : ITemplateService
     {
         try
         {
+            var lastFile = _repositoryStorage.GetLatestFile();
             var files = _repositoryStorage.Read();
             // Remove all files from repo
             _repositoryStorage.RemoveAllFiles();
             // Remove all files from system
             _fileService.RemoveAllFiles();
 
-            _logService.LogMessage("Backend", "Successful", "All versions were removed successfully", "Information");
-
-            // Create an audit record for the remove all action
-            var auditRecord = new AuditRecord
+            var filesAuditRecord = new FilesAudit
             {
-                Files_Audit_Id = "system", // Replace with actual user ID if available
+
                 Timestamp = DateTime.UtcNow,
-                Action = "RemoveAllVersions",
-                TableName = "Templates",
-                RecordId = "AllFiles", // Indicate that all files were targeted
-                NewValues = string.Empty, // No new values for a remove all action
-                OldValues = $"Removed all template versions"
+                Action = "DELETEALL",
+                RecordId = 1,
+                Content_old = null,
+                Content_new = null,
+                Version_old = lastFile.VersionNumber,
+                Version_new = "",
+                Name_old = lastFile.FileName,
+                Name_new = "",
+                Extension_old = "",
+                Extension_new = ""
             };
 
-            // Record the audit event
-            _auditService.RecordAuditAsync(auditRecord);
 
+            // Record the audit event
+            _filesAuditRepoService.CreateFilesAuditAsync(filesAuditRecord);
+
+            _logService.LogMessage("Backend", "Successful", "All versions were removed successfully", "Information");
+
+            var newLog = new Logs
+            {
+                Source = "Backend",
+                Context = "Successful",
+                Message = "All versions were removed successfully",
+                Type = "Information"
+            };
+            _logsRepoService.CreateLogAsync(newLog);
 
             return files.Select(p => (p.FileName, p.VersionNumber)).ToList();
         }
@@ -233,6 +282,15 @@ public class TemplateService : ITemplateService
             _auditService.RecordAuditAsync(auditRecord);
 
             _logService.LogMessage("Backend", "Successful", "Download successful", "Information");
+
+            var newLog = new Logs
+            {
+                Source = "Backend",
+                Context = "Successful",
+                Message = "Download successful",
+                Type = "Information"
+            };
+            _ = _logsRepoService.CreateLogAsync(newLog);
 
             return (fileContentBase64, contentType, latestFile.FileName);
         }

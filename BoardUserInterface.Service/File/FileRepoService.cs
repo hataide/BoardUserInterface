@@ -1,4 +1,5 @@
 ﻿using BoardUserInterface.Repositories;
+using BoardUserInterfaces.DataAccess.DTOs;
 using BoardUserInterfaces.DataAccess.Models;
 
 namespace BoardUserInterface.Service.DataAccess;

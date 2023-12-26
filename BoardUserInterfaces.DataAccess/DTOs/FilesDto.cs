@@ -1,4 +1,6 @@
-﻿public class FilesDto
+﻿namespace BoardUserInterfaces.DataAccess.DTOs;
+
+public class FilesDto
 {
     public string Version { get; set; }
     public string Name { get; set; }

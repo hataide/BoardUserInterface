@@ -10,7 +10,7 @@ public class BoardUserInterfaceContext : DbContext
     {
     }
 
-    public DbSet<FilesAudit> FilesAudits_DB { get; set; }
+    public DbSet<FilesAudit> FilesAudit_DB { get; set; }
     public DbSet<Audits> Audits { get; set; }
     public DbSet<Logs> Logs_DB { get; set; }
     public DbSet<Files> Files_DB { get; set; }
