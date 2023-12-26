@@ -1,15 +1,8 @@
-﻿using System.Net.Http;
-using System.Text.Json;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text.Json;
-using System.Threading.Tasks;
-using DocumentFormat.OpenXml.Spreadsheet;
-using BoardUserInterface.Service.Http.Response;
+﻿using BoardUserInterface.Common.Exceptions;
 using BoardUserInterface.FileService.Service;
+using BoardUserInterface.Helpers;
 using Microsoft.Extensions.Logging;
-using Serilog.Core;
-using BoardUserInterface.Service.Http.Exceptions;
+using System.Text.Json;
 
 
 namespace BoardUserInterface.Service.Http;
@@ -25,7 +18,7 @@ public class GenericHttpClient : IGenericHttpClient
         _logger = logger;
     }
 
-    public async Task<DownloadResponse> GetAsync(string requestUri, Dictionary<string, string> headers = null)
+    public async Task<TResponse> GetAsync<TResponse>(string requestUri, Dictionary<string, string> headers = null)
     {
         var client = _httpClientFactory.CreateClient();
         if (headers != null)
@@ -46,37 +39,17 @@ public class GenericHttpClient : IGenericHttpClient
             //throw new HttpRequestException($"Request failed with status code: {response.StatusCode}");
         }
 
-       // var content = await response.Content.ReadAsStringAsync();
-
-        // Log the raw JSON content for inspection
-        _logger.LogInformation("GenericHttpClient", "GetAsync", $"Raw JSON content: {content}", "Information");
-
-        try
+        // var content = await response.Content.ReadAsStringAsync();
+        if (!JsonHelper.IsValidJson(content))
         {
-            // Configure JsonSerializerOptions if necessary
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true // This will handle case differences between JSON keys and class properties
-            };
-
-            var downloadResponse = JsonSerializer.Deserialize<DownloadResponse>(content, options);
-            if (downloadResponse == null)
-            {
-                // Handle or log the error if deserialization returns null
-                throw new InvalidOperationException("Deserialization of the response content failed.");
-            }
-
-            return downloadResponse;
+            throw new InvalidOperationException("The response content is not valid JSON.");
         }
-        catch (JsonException jsonEx)
-        {
-            // Handle JSON deserialization errors
-            throw new JsonDeserializationException("Error deserializing the response content.", jsonEx);
-        }
+
+        // Deserialize the response content into an instance of TResponse
+        return JsonConverterHelper.Deserialize<TResponse>(content);
     }
 
-
-    public async Task<HttpResponseMessage> DeleteAsync(string requestUri, Dictionary<string, string> headers = null)
+    public async Task<TResponse> DeleteAsync<TResponse>(string requestUri, Dictionary<string, string> headers = null)
     {
         var client = _httpClientFactory.CreateClient();
         if (headers != null)
@@ -86,6 +59,7 @@ public class GenericHttpClient : IGenericHttpClient
                 client.DefaultRequestHeaders.Add(header.Key, header.Value);
             }
         }
+
         var response = await client.DeleteAsync(requestUri);
         if (!response.IsSuccessStatusCode)
         {
@@ -93,18 +67,15 @@ public class GenericHttpClient : IGenericHttpClient
             throw new HttpRequestFailedException(response.StatusCode, errorContent);
         }
 
-        return response;
+        var content = await response.Content.ReadAsStringAsync();
+        return JsonConverterHelper.Deserialize<TResponse>(content);
     }
 
-    public async Task<string> PostAsync<TRequest>(string requestUri, TRequest content, Dictionary<string, string> headers = null)
+    public async Task<TResponse> PostAsync<TRequest, TResponse>(string requestUri, TRequest content, Dictionary<string, string> headers = null)
     {
-        // Create an HttpClient instance using the IHttpClientFactory.
         var client = _httpClientFactory.CreateClient();
+        var jsonContent = new StringContent(JsonConverterHelper.SerializeObject(content), System.Text.Encoding.UTF8, "application/json");
 
-        // Serialize the request content to JSON.
-        var jsonContent = new StringContent(JsonSerializer.Serialize(content), System.Text.Encoding.UTF8, "application/json");
-
-        // Add any custom headers to the request.
         if (headers != null)
         {
             foreach (var header in headers)
@@ -113,27 +84,40 @@ public class GenericHttpClient : IGenericHttpClient
             }
         }
 
-        // Send the POST request.
         var response = await client.PostAsync(requestUri, jsonContent);
-
-        // Ensure we got a successful response.
         if (!response.IsSuccessStatusCode)
         {
             var errorContent = await response.Content.ReadAsStringAsync();
             throw new HttpRequestFailedException(response.StatusCode, errorContent);
         }
 
-        // Read and return the response content as a JSON string.
         var responseContent = await response.Content.ReadAsStringAsync();
-        return responseContent;
+        //return JsonConverterHelper.Deserialize<TResponse>(responseContent);
+        // If the expected response type is string, cast the response content and return
+        if (typeof(TResponse) == typeof(string))
+        {
+            return (TResponse)(object)responseContent;
+        }
+
+        // Otherwise, deserialize the JSON content to the expected type
+        try
+        {
+            return JsonConverterHelper.Deserialize<TResponse>(responseContent);
+        }
+        catch (JsonException jsonEx)
+        {
+            _logger.LogError(jsonEx, "Error deserializing the response content.");
+            throw new NotAbleToDeserializeException("Error deserializing the response content.", jsonEx);
+        }
+
     }
 
-    public async Task<string> PutAsync<TRequest>(string requestUri, TRequest content, Dictionary<string, string> headers = null)
+
+    public async Task<TResponse> PutAsync<TRequest, TResponse>(string requestUri, TRequest content, Dictionary<string, string> headers = null)
     {
         var client = _httpClientFactory.CreateClient();
-        // Serialize the request content to JSON
-        var jsonContent = new StringContent(JsonSerializer.Serialize(content), System.Text.Encoding.UTF8, "application/json");
-        // Add any custom headers to the request
+        var jsonContent = new StringContent(JsonConverterHelper.SerializeObject(content), System.Text.Encoding.UTF8, "application/json");
+
         if (headers != null)
         {
             foreach (var header in headers)
@@ -141,18 +125,25 @@ public class GenericHttpClient : IGenericHttpClient
                 client.DefaultRequestHeaders.Add(header.Key, header.Value);
             }
         }
-        // Send the PUT request
+
         var response = await client.PutAsync(requestUri, jsonContent);
-        // Ensure we got a successful response
         if (!response.IsSuccessStatusCode)
         {
             var errorContent = await response.Content.ReadAsStringAsync();
             throw new HttpRequestFailedException(response.StatusCode, errorContent);
         }
 
-        // Read and return the response content as a JSON string
         var responseContent = await response.Content.ReadAsStringAsync();
-        return responseContent;
+
+        // If the expected response type is string, return the response content directly.
+        if (typeof(TResponse) == typeof(string))
+        {
+            return (TResponse)(object)responseContent;
+        }
+
+        // Otherwise, deserialize the JSON content to the expected type.
+        return JsonConverterHelper.Deserialize<TResponse>(responseContent);
+
     }
 
 

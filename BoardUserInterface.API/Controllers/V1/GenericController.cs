@@ -1,5 +1,4 @@
 ﻿using BoardUserInterface.Service.Http;
-using BoardUserInterface.Service.Http.Response;
 using BoardUserInterface.Service.Logging;
 using Microsoft.AspNetCore.Mvc;
 
@@ -65,7 +64,7 @@ public class GenericController : ControllerBase
     {
         try
         {
-            var result = await _genericService.UpdateData(data);
+            var result = await _genericService.PutTest(data);
             return Ok(result);
         }
         catch (Exception ex)
