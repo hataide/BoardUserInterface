@@ -6,23 +6,15 @@ namespace BoardUserInterface.API.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class TestController : ControllerBase
+public class AuditController : ControllerBase
 {
     private readonly IAuditRepoService _auditService;
-    private readonly IFileRepoService _fileService;
-    private readonly IFilesAuditRepoService _filesAuditService;
-    private readonly ILogsRepoService _logsService;
 
-    public TestController(
-        IAuditRepoService auditService,
-        IFileRepoService fileService,
-        IFilesAuditRepoService filesAuditService,
-        ILogsRepoService logsService)
+
+    public AuditController(
+        IAuditRepoService auditService)
     {
         _auditService = auditService;
-        _fileService = fileService;
-        _filesAuditService = filesAuditService;
-        _logsService = logsService;
     }
 
 

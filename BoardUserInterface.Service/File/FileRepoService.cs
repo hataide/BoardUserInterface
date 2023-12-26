@@ -1,5 +1,4 @@
-﻿using BoardUserInterface.FileService.Service;
-using BoardUserInterface.Repositories;
+﻿using BoardUserInterface.Repositories;
 using BoardUserInterfaces.DataAccess.Models;
 
 namespace BoardUserInterface.Service.DataAccess;
@@ -22,12 +21,20 @@ public class FileRepoService : IFileRepoService
     {
         return await _fileRepository.GetAllAsync();
     }
-
-    public async Task<Files> CreateFileAsync(Files file)
+    public async Task<Files> CreateFileAsync(FilesDto fileDto)
     {
+        var file = new Files
+        {
+            Version = fileDto.Version,
+            Name = fileDto.Name,
+            Extension = fileDto.Extension,
+            Content = fileDto.Content,
+        };
+
         await _fileRepository.AddAsync(file);
         return file;
     }
+
 
     public async Task<Files> UpdateFileAsync(Files file)
     {
@@ -36,11 +43,11 @@ public class FileRepoService : IFileRepoService
     }
 
     public async Task DeleteFileAsync(int id)
-    {
-        var file = await _fileRepository.GetByIdAsync(id);
-        if (file != null)
         {
-            await _fileRepository.DeleteAsync(file);
+            var file = await _fileRepository.GetByIdAsync(id);
+            if (file != null)
+            {
+                await _fileRepository.DeleteAsync(file);
+            }
         }
     }
-}

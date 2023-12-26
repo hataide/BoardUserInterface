@@ -10,10 +10,10 @@ public class BoardUserInterfaceContext : DbContext
     {
     }
 
-    public DbSet<FilesAudit> FilesAudits { get; set; }
+    public DbSet<FilesAudit> FilesAudits_DB { get; set; }
     public DbSet<Audits> Audits { get; set; }
-    public DbSet<Logs> Logs { get; set; }
-    public DbSet<Files> Files { get; set; }
+    public DbSet<Logs> Logs_DB { get; set; }
+    public DbSet<Files> Files_DB { get; set; }
     // ... DbSets for other tables
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

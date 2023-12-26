@@ -6,11 +6,11 @@ namespace BoardUserInterface.API.Controllers.V1;
 [ApiController]
 [Route("api/v{version:apiVersion}/logs")]
 [ApiVersion("1.0")]
-public class LogsController : ControllerBase
+public class LoggingController : ControllerBase
 {
     private readonly ILogService _logService;
 
-    public LogsController(ILogService logService)
+    public LoggingController(ILogService logService)
     {
         _logService = logService;
     }

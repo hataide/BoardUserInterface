@@ -11,5 +11,6 @@ public class Files
     public string Version { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Extension { get; set; } = string.Empty;
+    public byte[]? Content { get; set; }
 
 }
