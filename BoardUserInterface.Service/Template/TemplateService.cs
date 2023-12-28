@@ -12,7 +12,6 @@ using BoardUserInterface.Service.DataAccess;
 using BoardUserInterface.Service.Logging;
 using BoardUserInterface.Service.Models;
 using BoardUserInterfaces.DataAccess.Models;
-using BoardUserInterfaces.DataAccess.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
 using System.Net.Http.Headers;
@@ -138,7 +137,7 @@ public class TemplateService : ITemplateService
     }
 
 
-    public (string fileName, string version) RemoveLastVersion()
+    public async Task<(string fileName, string version)> RemoveLastVersion()
     {
         try
         {
@@ -188,7 +187,7 @@ public class TemplateService : ITemplateService
                 Message = $"Last version of {fileName} was removed successfully",
                 Type = "Information"
             };
-            _logsRepoService.CreateLogAsync(newLog);
+            _= await _logsRepoService.CreateLogAsync(newLog);
 
             return (fileName, latestVersion);
 
@@ -199,7 +198,7 @@ public class TemplateService : ITemplateService
         }
     }
 
-    public List<(string filename, string version)> RemoveAllVersionsAsync()
+    public async Task<List<(string filename, string version)>> RemoveAllVersionsAsync()
     {
         try
         {
@@ -239,7 +238,7 @@ public class TemplateService : ITemplateService
                 Message = "All versions were removed successfully",
                 Type = "Information"
             };
-            _logsRepoService.CreateLogAsync(newLog);
+            _= await _logsRepoService.CreateLogAsync(newLog);
 
             return files.Select(p => (p.FileName, p.VersionNumber)).ToList();
         }
@@ -290,7 +289,7 @@ public class TemplateService : ITemplateService
                 Message = "Download successful",
                 Type = "Information"
             };
-            _ = _logsRepoService.CreateLogAsync(newLog);
+            _logsRepoService.CreateLogAsync(newLog);
 
             return (fileContentBase64, contentType, latestFile.FileName);
         }

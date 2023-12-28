@@ -28,7 +28,7 @@ public class TemplateController : ControllerBase
     [HttpDelete("remove-version")]
     public async Task<IActionResult> RemoveVersion()
     {
-        var (fileName, version) = _templateService.RemoveLastVersion();
+        var (fileName, version) = await _templateService.RemoveLastVersion();
         return Ok($"Version {version} of {fileName} was removed successfully.");
 
     }
@@ -46,7 +46,7 @@ public class TemplateController : ControllerBase
         try
         {
             // Use the download service to get the latest file
-            var (fileContentBase64, contentType, fileName) = _templateService.DownloadLatestFile();
+            var (fileContentBase64, contentType, fileName) =  _templateService.DownloadLatestFile();
 
             // Return a JSON object with the Base64-encoded file content and file name
             return Ok(new { FileContent = fileContentBase64, ContentType = contentType, FileName = fileName });

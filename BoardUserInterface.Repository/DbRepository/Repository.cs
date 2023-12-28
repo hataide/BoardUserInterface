@@ -53,8 +53,6 @@ public class Repository<T> : IRepository<T> where T : class
         await _context.SaveChangesAsync();
     }
 
-
-
     public async Task DeleteAsync(T entity)
     {
         try

@@ -91,7 +91,9 @@ builder.Services.AddScoped<IDataAccessService, DataAccessService>();
 builder.Services.AddScoped<IAuditRepoService, AuditRepoService>();
 builder.Services.AddScoped<IFileRepoService, FileRepoService>();
 builder.Services.AddScoped<IFilesAuditRepoService, FilesAuditRepoService>();
-builder.Services.AddScoped<ILogsRepoService, LogsRepoService>();
+
+//Turn it into singleton
+builder.Services.AddSingleton<ILogsRepoService, LogsRepoService>();
 
 
 builder.Services.AddSingleton<IRepositoryStorage>(provider => new RepositoryStorage("versions.json"));
