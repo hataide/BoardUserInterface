@@ -93,7 +93,7 @@ builder.Services.AddScoped<IFileRepoService, FileRepoService>();
 builder.Services.AddScoped<IFilesAuditRepoService, FilesAuditRepoService>();
 
 //Turn it into singleton
-builder.Services.AddSingleton<ILogsRepoService, LogsRepoService>();
+builder.Services.AddScoped<ILogsRepoService, LogsRepoService>();
 
 
 builder.Services.AddSingleton<IRepositoryStorage>(provider => new RepositoryStorage("versions.json"));
